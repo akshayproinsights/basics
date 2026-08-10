@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environment
+.venv/
+venv/
+
+# SQLite database (data, not code)
+*.db
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Environment variables
+.env
