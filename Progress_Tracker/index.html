@@ -1,0 +1,1212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Engineer Roadmap Tracker</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>">
+<!-- Firebase SDKs -->
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import{getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import{getFirestore,doc,getDoc,setDoc}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// ── PASTE YOUR FIREBASE CONFIG HERE ──────────────────────────────────────────
+// Go to https://console.firebase.google.com → Your project → Project settings
+// → "Your apps" → Web app → firebaseConfig
+const firebaseConfig = {
+  apiKey: "AIzaSyDyz0PtExSH2ZdUmNu3pl-Ta3G5GhbT54Q",
+  authDomain: "ai-engineer-tracker-44207.firebaseapp.com",
+  projectId: "ai-engineer-tracker-44207",
+  storageBucket: "ai-engineer-tracker-44207.firebasestorage.app",
+  messagingSenderId: "442639367019",
+  appId: "1:442639367019:web:18c1c60503f404ca21ea2e",
+  measurementId: "G-XXM0X9HEYL"
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
+const fbApp=initializeApp(firebaseConfig);
+const fbAuth=getAuth(fbApp);
+const fbDb=getFirestore(fbApp);
+const provider=new GoogleAuthProvider();
+
+window._fb={fbAuth,fbDb,provider,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged,doc,getDoc,setDoc};
+window._fbReady=true;
+window.dispatchEvent(new Event("fb-ready"));
+</script>
+<style>
+:root{
+  --bg:#EEF2EF;--surface:#FFFFFF;--ink:#1C2B27;--muted:#5E6E68;--line:#D6DDD8;
+  --accent:#1F6F5C;--accent-soft:#DCEBE5;--gold:#D9981A;--gold-soft:#FBEFD2;--danger:#B4442F;
+  --hover:rgba(31,111,92,.07);
+  --serif:"Iowan Old Style","Charter","Bitstream Charter","Sitka Text",Cambria,Georgia,serif;
+  --sans:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg:#111916;--surface:#18221F;--ink:#E4EBE7;--muted:#93A39C;--line:#2A3833;
+  --accent:#4DB396;--accent-soft:#1E3530;--gold:#F2B94A;--gold-soft:#3A3020;--danger:#E07A63;
+  --hover:rgba(77,179,150,.09);color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--sans);-webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom,0px)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+button{font:inherit;cursor:pointer;color:inherit}
+
+/* header */
+header.top{padding:calc(26px + env(safe-area-inset-top,0px)) 0 4px}
+.titlebar{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.titlebox{flex:1;min-width:280px}
+h1.title{font-family:var(--serif);font-weight:600;font-size:34px;line-height:1.15;margin:0;letter-spacing:-.01em}
+.goal{color:var(--muted);max-width:74ch;margin-top:6px}
+.hdr-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.saved{font-size:13px;color:var(--muted);min-width:90px;text-align:right}
+.saved.err{color:var(--danger);font-weight:600}
+
+/* buttons & inputs */
+.btn{border:1px solid var(--line);background:var(--surface);padding:6px 12px;border-radius:6px;font-size:14px;line-height:1.3}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .btn.primary{color:#0e1a16}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+.btn.ghost:hover{color:var(--ink);border-color:var(--line)}
+.btn.danger{color:var(--danger)}
+.btn.small{padding:3px 8px;font-size:13px}
+.btn.nudge{border-color:var(--gold);background:var(--gold-soft)}
+input[type=text],input[type=url],input[type=date],input[type=number],input[type=search],select,textarea{
+  font:inherit;font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+input[type=number]{width:84px}
+textarea{width:100%;min-height:72px;resize:vertical;line-height:1.5}
+label.inline{display:inline-flex;gap:6px;align-items:center;font-size:14px;color:var(--muted)}
+
+/* editable text */
+.ed{outline:none;border-radius:4px;padding:1px 4px;margin:-1px -4px;white-space:pre-wrap;word-break:break-word;min-height:1.4em}
+.ed:hover{background:var(--hover)}
+.ed:focus{background:var(--hover);box-shadow:0 0 0 1px var(--accent)}
+.ed:empty::before{content:attr(data-ph);color:var(--muted);opacity:.75}
+
+/* route */
+.route{margin:20px 0 4px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 18px 14px}
+.route-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.route-head .big{font-family:var(--serif);font-size:22px;font-weight:600;line-height:1.2}
+.route-head .sub{max-width:60ch}
+.route-overall{min-width:220px;flex:0 1 320px}
+.route-overall .bar{height:8px}
+.route-scroll{overflow-x:auto;padding-bottom:4px}
+.route-track{position:relative;display:flex;justify-content:space-between;min-width:760px;padding:2px 2px 0}
+.route-line{position:absolute;left:17px;right:17px;top:17px;height:3px;background:var(--line);border-radius:2px}
+.route-line i{display:block;height:100%;background:var(--gold);border-radius:2px}
+.stn{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:5px;background:none;border:0;padding:0;color:var(--muted);font-size:12px;width:34px}
+.stn .dot{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--accent) calc(var(--p) * 1%), var(--line) 0)}
+.stn .dot span{width:26px;height:26px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font-size:11.5px;color:var(--ink);font-weight:600}
+.stn.full .dot span{background:var(--accent);color:#fff}
+:root[data-theme="dark"] .stn.full .dot span{color:#0e1a16}
+.stn.ms .dot{box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--gold)}
+.stn.now{color:var(--ink);font-weight:700}
+.stn .now-tag{font-size:11px;background:var(--gold);color:#1c1406;border-radius:999px;padding:0 6px;font-weight:600}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:50%}
+
+/* tabs */
+nav.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin:20px 0 22px;overflow-x:auto}
+.tab{background:none;border:0;padding:10px 14px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;font-size:15px;white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab.on{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+
+/* layout */
+.grid2{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:880px){.grid2{grid-template-columns:1fr}}
+.col{display:grid;gap:20px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px}
+.panel h2{font-family:var(--serif);font-size:21px;font-weight:600;margin:0 0 4px;line-height:1.25}
+.panel h3{font-size:15px;margin:14px 0 6px}
+.sub{color:var(--muted);font-size:14px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.spread{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.stat{background:var(--surface);padding:12px 14px}
+.stat b{display:block;font-family:var(--serif);font-size:26px;font-weight:600;line-height:1.1}
+.stat span{font-size:13px;color:var(--muted)}
+
+/* bars */
+.bar{height:6px;background:var(--line);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:4px;transition:width .3s}
+.bar.gold i{background:var(--gold)}
+
+/* why card */
+.why{border-left:3px solid var(--gold);background:var(--surface);border-radius:0 10px 10px 0;padding:16px 18px;border-top:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.why p{font-family:var(--serif);font-size:18px;line-height:1.45;margin:0 0 10px}
+
+/* phases & weeks */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:22px}
+.toolbar input[type=search]{flex:1;min-width:200px}
+.phase{margin-bottom:36px}
+.phase-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;flex-wrap:wrap;margin-bottom:12px}
+.phase-name{font-family:var(--serif);font-size:27px;font-weight:600;margin:0;line-height:1.2}
+.phase-why{color:var(--muted);max-width:74ch;margin-top:4px}
+.phase-meta{min-width:210px;flex:0 0 240px}
+.phase-meta .sub{margin-bottom:6px}
+.week{background:var(--surface);border:1px solid var(--line);border-radius:10px;margin-bottom:10px}
+.week.current{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.week.complete .badge{background:var(--accent);color:#fff}
+:root[data-theme="dark"] .week.complete .badge{color:#0e1a16}
+.week-head{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;flex-wrap:wrap}
+.badge{flex:none;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
+.badge.ms{background:var(--gold-soft);color:var(--ink);border:1px solid var(--gold)}
+.week-title{flex:1;min-width:180px;font-weight:600}
+.week-dates{font-size:13px;color:var(--muted);white-space:nowrap}
+.mini{width:90px;flex:none}
+.count{font-size:13px;color:var(--muted);min-width:44px;text-align:right}
+.chev{display:inline-block;transition:transform .15s;color:var(--muted)}
+.week.open .chev{transform:rotate(90deg)}
+.week-body{padding:2px 14px 14px;border-top:1px solid var(--line)}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px 22px;margin:12px 0 6px}
+.field label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:2px}
+.sec-tools{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:flex-end;margin-top:12px;padding-top:10px;border-top:1px dashed var(--line)}
+
+/* tasks */
+.tasks{list-style:none;margin:8px 0 0;padding:0}
+.task{border-top:1px solid var(--line)}
+.task:first-child{border-top:0}
+.trow{display:flex;align-items:flex-start;gap:10px;padding:8px 0}
+.chk{appearance:none;-webkit-appearance:none;width:20px;height:20px;border:2px solid var(--muted);border-radius:5px;flex:none;margin:2px 0 0;cursor:pointer;display:grid;place-items:center;background:var(--surface)}
+.chk:hover{border-color:var(--accent)}
+.chk:checked{background:var(--accent);border-color:var(--accent)}
+.chk:checked::after{content:"";width:5px;height:10px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+:root[data-theme="dark"] .chk:checked::after{border-color:#0e1a16}
+.ttext{flex:1;min-width:0}
+.task.done > .trow .ttext{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--line)}
+.tmeta{display:flex;gap:10px;align-items:center;flex:none;flex-wrap:wrap;justify-content:flex-end}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);white-space:nowrap}
+.chip::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--c)}
+.when{font-size:12px;color:var(--accent);font-weight:600;white-space:nowrap}
+.icons{font-size:12px;color:var(--muted);white-space:nowrap}
+.tdetail{padding:2px 0 16px 30px;display:grid;gap:14px}
+.tdetail h4{margin:0 0 4px;font-size:13px;color:var(--muted);font-weight:600}
+.list-mini{list-style:none;padding:0;margin:2px 0}
+.list-mini li{display:flex;gap:8px;align-items:center;padding:3px 0;font-size:14px;flex-wrap:wrap}
+.list-mini a{word-break:break-all}
+.addrow{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;align-items:center}
+.addrow input[type=text],.addrow input[type=url]{flex:1;min-width:170px}
+.filebtn{position:relative;overflow:hidden}
+.filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.empty{color:var(--muted);font-size:14px;padding:6px 0}
+
+/* heatmap */
+.heat{display:grid;grid-auto-flow:column;grid-template-rows:repeat(7,12px);gap:3px;overflow-x:auto;padding:4px 0}
+.heat i{width:12px;height:12px;border-radius:3px;background:var(--line)}
+.heat i.l1{background:color-mix(in srgb,var(--accent) 30%,var(--line))}
+.heat i.l2{background:color-mix(in srgb,var(--accent) 55%,var(--line))}
+.heat i.l3{background:color-mix(in srgb,var(--accent) 80%,var(--line))}
+.heat i.l4{background:var(--accent)}
+.heat i.today{outline:2px solid var(--gold);outline-offset:1px}
+.heat i.out{opacity:.35}
+
+/* milestones */
+.ms-list{list-style:none;padding:0;margin:8px 0 0}
+.ms-list li{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px solid var(--line)}
+.ms-list li:first-child{border-top:0}
+
+/* tables */
+.table-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{text-align:left;font-weight:600;color:var(--muted);font-size:13px;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+td .ed{min-width:90px}
+.stage-chips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
+.stage-chips span{font-size:13px;border:1px solid var(--line);border-radius:999px;padding:2px 10px;color:var(--muted)}
+.stage-chips b{color:var(--ink)}
+
+/* reference */
+.cards{columns:2 380px;column-gap:20px}
+.card{break-inside:avoid;margin-bottom:20px;display:block}
+.card ul{padding-left:18px;margin:8px 0 0}
+.card li{margin:5px 0}
+.card li .li-row{display:flex;gap:6px;align-items:flex-start}
+.card li .li-row .ed{flex:1}
+.x{opacity:0;border:0;background:none;color:var(--muted);padding:0 4px;font-size:15px;line-height:1.4}
+li:hover > .li-row > .x,li:focus-within > .li-row > .x,.x:focus{opacity:1}
+@media (hover:none){.x{opacity:.6}}
+
+/* firebase auth bar */
+.auth-btn{display:flex;align-items:center;gap:7px;padding:5px 13px 5px 8px;border-radius:20px;border:1.5px solid var(--line);background:var(--surface);font-size:13px;font-weight:500;cursor:pointer;transition:background .15s,border-color .15s;white-space:nowrap;}
+.auth-btn:hover{background:var(--hover);border-color:var(--accent);}
+.auth-avatar{width:24px;height:24px;border-radius:50%;object-fit:cover;}
+.auth-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block;}
+.sync-badge{font-size:11px;padding:2px 7px;border-radius:10px;background:var(--accent-soft);color:var(--accent);font-weight:600;margin-left:4px;}
+/* toast + fx */
+#toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;display:none;gap:14px;align-items:center;z-index:50;font-size:14px;box-shadow:0 6px 24px rgba(0,0,0,.18);max-width:calc(100vw - 32px)}
+#toast.show{display:flex}
+#toast button{background:none;border:0;color:var(--gold);font-weight:700;padding:0}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:60}
+footer{color:var(--muted);font-size:13px;padding:30px 0 40px}
+@media (prefers-reduced-motion:reduce){.chev,.bar i{transition:none}}
+@media (max-width:600px){
+  h1.title{font-size:27px}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .mini{display:none}
+  .tdetail{padding-left:0}
+  .trow{flex-wrap:wrap}
+  .ttext{flex:1 1 calc(100% - 34px)}
+  .tmeta{margin-left:30px;justify-content:flex-start;width:100%}
+  .phase-meta{flex:1 1 100%}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top" id="hdr"></header>
+  <section class="route" id="route" aria-label="Weekly route"></section>
+  <nav class="tabs" id="tabs" aria-label="Sections"></nav>
+  <main id="main"></main>
+  <footer id="foot"></footer>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<script>
+"use strict";
+/* ============ firebase cloud sync ============ */
+let fbUser=null,fbSyncing=false;
+function fbDocRef(){if(!fbUser||!window._fb)return null;const{fbDb,doc}=window._fb;return doc(fbDb,"trackers",fbUser.uid);}
+async function fbLoad(){if(!fbUser||!window._fb)return null;try{const{getDoc}=window._fb;const r=await getDoc(fbDocRef());return r.exists()?r.data().state:null;}catch(e){console.error("Firestore load:",e);return null;}}
+async function fbSave(s){if(!fbUser||!window._fb||fbSyncing)return;fbSyncing=true;try{const{setDoc}=window._fb;await setDoc(fbDocRef(),{state:s,uid:fbUser.uid,updated:new Date().toISOString()});}catch(e){console.error("Firestore save:",e);}finally{fbSyncing=false;}}
+function fbSignIn(){if(!window._fb)return;const{fbAuth,provider,signInWithPopup}=window._fb;signInWithPopup(fbAuth,provider).catch(e=>toast("Sign-in failed: "+e.message));}
+function fbSignOut(){if(!window._fb)return;const{fbAuth,signOut}=window._fb;signOut(fbAuth).then(()=>{fbUser=null;render();toast("Signed out. Progress saved locally.");});}
+function fbInit(){
+  if(!window._fb)return;
+  const{fbAuth,onAuthStateChanged}=window._fb;
+  onAuthStateChanged(fbAuth,async u=>{
+    fbUser=u;
+    if(u&&typeof render==="function"){
+      const cloud=await fbLoad();
+      if(cloud&&(!state||!state.updated||(cloud.updated||"")>(state.updated||""))){
+        state=cloud;migrate();render();toast("☁️ Synced from cloud ("+u.displayName+")");}
+      else if(state&&state.updated){await fbSave(JSON.parse(JSON.stringify(state)));}
+      render();
+    }else if(typeof render==="function")render();
+  });
+}
+window.addEventListener("fb-ready",fbInit);
+if(window._fbReady)fbInit();
+
+/* ============ constants & helpers ============ */
+const CATS={learn:["Learn","#3B6FB6"],build:["Build","#1F8A6E"],tracelink:["TraceLink","#7A4FB0"],dsa:["DSA","#C0772B"],design:["System design","#2E8A99"],mock:["Mock interview","#B5476B"],notes:["Notebook","#6E7B55"],jobs:["Job search","#8A6A1F"],revise:["Revise","#7C8A84"],selftest:["Self-test","#A3542E"]};
+const STAGES=["Wishlist","Applied","Screening","Interviewing","Offer","Rejected","Withdrawn"];
+const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const LSK="ai-roadmap-tracker-state";
+const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4);
+const pad=n=>String(n).padStart(2,"0");
+const iso=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const todayISO=()=>iso(new Date());
+const pd=s=>new Date(s+"T00:00:00");
+const addDays=(s,n)=>{const d=pd(s);d.setDate(d.getDate()+n);return iso(d);};
+const fmt=s=>{if(!s)return"";const d=pd(s);return d.getDate()+" "+MON[d.getMonth()];};
+const fmtY=s=>s?fmt(s)+" "+pd(s).getFullYear():"";
+const daysBetween=(a,b)=>Math.round((pd(b)-pd(a))/864e5);
+const $=s=>document.querySelector(s);
+const PROPS=new Set(["checked","value","disabled","selected"]);
+function h(tag,a,...kids){
+  const e=document.createElement(tag);
+  if(a)for(const k in a){const v=a[k];if(v==null||v===false)continue;
+    if(k==="class")e.className=v;else if(k==="style")e.style.cssText=v;
+    else if(k.startsWith("on")&&typeof v==="function")e.addEventListener(k.slice(2),v);
+    else if(PROPS.has(k))e[k]=v;else e.setAttribute(k,v===true?"":v);}
+  for(const c of kids.flat()){if(c==null||c===false)continue;e.append(c.nodeType?c:document.createTextNode(String(c)));}
+  return e;
+}
+function ed(obj,key,o={}){
+  const e=h(o.tag||"div",{class:"ed "+(o.cls||""),"data-ph":o.ph||"Click to edit",spellcheck:"true",role:"textbox","aria-label":o.label||o.ph||"Editable text"});
+  e.textContent=obj[key]||"";
+  try{e.contentEditable="plaintext-only";}catch(_){}
+  if(e.contentEditable!=="plaintext-only")e.contentEditable="true";
+  e.addEventListener("input",()=>{obj[key]=e.innerText.replace(/\n+$/,"");save();if(o.onchange)o.onchange();});
+  e.addEventListener("paste",ev=>{ev.preventDefault();const t=(ev.clipboardData||window.clipboardData).getData("text");document.execCommand("insertText",false,t);});
+  e.addEventListener("keydown",ev=>{if(ev.key==="Enter"&&!o.multi&&!ev.shiftKey){ev.preventDefault();e.blur();}});
+  e.addEventListener("click",ev=>ev.stopPropagation());
+  if(o.onblur)e.addEventListener("blur",o.onblur);
+  return e;
+}
+const chip=c=>{const m=CATS[c]||["Other","#999"];return h("span",{class:"chip",style:"--c:"+m[1]},m[0]);};
+const catSelect=(val,onch)=>{const s=h("select",{"aria-label":"Category",onchange:()=>onch(s.value)});for(const k in CATS)s.append(h("option",{value:k,selected:k===val},CATS[k][0]));return s;};
+const bar=(pct,gold)=>h("div",{class:"bar"+(gold?" gold":""),role:"progressbar","aria-valuenow":pct,"aria-valuemin":0,"aria-valuemax":100},h("i",{style:"width:"+pct+"%"}));
+const fsize=b=>b>1048576?(b/1048576).toFixed(1)+" MB":b>1024?Math.round(b/1024)+" KB":(b||0)+" B";
+
+/* ============ seed roadmap ============ */
+function T(cat,text){return{id:uid(),cat,text,done:false,date:"",notes:"",sources:[],files:[],recall:[]};}
+function S(o,tasks){return Object.assign({id:uid(),num:null,title:"",why:"",dod:"",behind:"",tasks:tasks.map(([c,t])=>T(c,t)),review:{},open:false},o);}
+function P(name,why,sections){return{id:uid(),name,why,sections};}
+function seed(){
+  const phases=[
+  P("Phase 0: Setup and what you already know","You already do this work in production. Each part takes 10 to 15 minutes to prove. Pass the self-test and move on; if it fails, you have drifted, so spend only the hours in the fail rule. The goal is confidence, not re-study.",[
+    S({title:"Set up your workspace",why:"A calm, ready setup means every study hour goes into learning, not fighting tools. The personal laptop has 8 GB RAM, so the cloud does the heavy lifting.",dod:"Everything below works, and the first backup of this tracker is downloaded.",behind:"Skip Codespaces until Week 5 when Docker starts."},[
+      ["build","Python venv + VS Code with only the Python and Jupyter extensions (personal laptop)"],
+      ["build","Google Colab linked to your personal Google Drive"],
+      ["build","Personal GitHub repo for the journey; first commit today, then one commit every day"],
+      ["build","GitHub Codespaces enabled (for Docker work later)"],
+      ["build","API keys: Gemini free tier first, then a small Anthropic/OpenAI credit"],
+      ["notes","Physical notebook with 5 sections: Mental models, Architecture, Mistakes, Interview questions, Things I keep forgetting"],
+      ["build","Office laptop rule: TraceLink data stays on the office machine; personal laptop for learning, portfolio and job search"],
+      ["build","Download the first backup of this tracker (Settings and backup tab)"]]),
+    S({title:"Python fundamentals (known, revise only if out of touch)",why:"Every interview coding round and every project sits on this. You write production Python already, so this is a quick check.",dod:"Self-test passed without notes.",behind:"Fail rule: 2 hours on the functools and contextlib docs plus one exercise, then retest."},[
+      ["revise","Mutability, is vs ==, the default mutable argument trap"],
+      ["revise","Generators vs lists (memory), decorators, context managers (__enter__/__exit__ and contextlib)"],
+      ["revise","dataclass, TypedDict, Protocol and type hints"],
+      ["selftest","Self-test (10 min): write a retry decorator with exponential backoff + jitter, and a timing context manager, from memory"]]),
+    S({title:"Concurrency (known, revise only if out of touch)",why:"LLM apps are I/O-bound. Fan-out calls, streaming and batching all depend on asyncio, which you have already studied.",dod:"Self-test passed.",behind:"Fail rule: 2 hours on asyncio semaphores and wait_for, then rebuild the self-test."},[
+      ["revise","async/await, event loop, create_task vs gather, cancellation, timeouts, semaphores"],
+      ["revise","Threads vs async vs multiprocessing, and the GIL reasoning behind the choice"],
+      ["selftest","Self-test (10 min): fan out 20 API calls with a concurrency cap of 5 and a per-call timeout"]]),
+    S({title:"SQL and Postgres (known, revise only if out of touch)",why:"You are a T-SQL expert. The only new part is Postgres dialect, which doubles as pgvector prep for Week 3.",dod:"Self-test passed.",behind:"Fail rule: 2 hours on the PostgreSQL EXPLAIN docs."},[
+      ["revise","B-tree indexes, when a plan does a sequential scan, ACID, isolation levels"],
+      ["revise","Postgres specifics: EXPLAIN ANALYZE, CTEs and window functions in PG dialect"],
+      ["selftest","Self-test (15 min): given a slow query, explain how you read the plan and which index you add"]]),
+    S({title:"Git and engineering habits (known, revise only if out of touch)",why:"Daily commits are part of your portfolio signal. Recruiters do look at the green squares.",dod:"Self-test passed.",behind:"Fail rule: 1 hour GitHub flow refresher."},[
+      ["revise","Branch and PR flow, rebase vs merge, .gitignore for secrets, clear commit messages"],
+      ["selftest","Self-test (5 min): branch, commit, open a PR to yourself, squash-merge"]]),
+    S({title:"ML fundamentals and your negative binomial story (known)",why:"You will be asked about your own model in every loop. Having the story crisp is worth more than any new topic.",dod:"You can tell the story out loud in under 3 minutes.",behind:"Fail rule: 1 hour re-reading your model notes and writing the story in the notebook."},[
+      ["revise","Bias/variance, regularization, cross-validation, over/underfitting"],
+      ["revise","Precision, recall, F1, ROC-AUC vs PR-AUC, when accuracy misleads with imbalance"],
+      ["selftest","Self-test (15 min): explain why variance-to-mean led you to negative binomial over Poisson, and defend it"]]),
+    S({title:"AWS and your TraceLink architecture (known)",why:"Your AWS background is your edge for Bedrock-based roles. You will draw this architecture in almost every round.",dod:"One-page architecture drawn from memory and saved in the notebook.",behind:"Fail rule: 1 hour to redraw and annotate it."},[
+      ["revise","S3, IAM roles and least privilege"],
+      ["revise","Your S3 to Python to T-SQL hourly pipeline and the QuickSight dashboards on top"],
+      ["selftest","Self-test (10 min): draw the full TraceLink data platform on one page from memory"]])
+  ]),
+  P("Phase A: Gap-fill and first LLM calls","Weeks 1 and 2. Skip what you know, make your first LLM calls, stand up a FastAPI service, and get the TraceLink LLM feature proposal in front of Adam. The proposal is both your promotion evidence and your future resume headline.",[
+    S({num:1,title:"LLM API basics and first raw calls",why:"Everything later builds on knowing exactly what an API call does, costs and returns. You do it by hand first so no framework can hide it from you.",dod:"Phase 0 self-tests done; multi-provider script committed; Project 0 proposal drafted.",behind:"Skip any framework redo; keep the raw script."},[
+      ["learn","LLM API basics: chat messages, system prompt, temperature and top-p, structured JSON output, tool calling"],
+      ["learn","Prompt engineering basics: clear instructions, few-shot examples, structured output"],
+      ["build","Raw Python script calling Gemini Flash and Claude with JSON output and one tool call (no framework)"],
+      ["tracelink","Draft a one-page Project 0 proposal: LLM classification/summarization in the Google Chat error digest; name Bedrock as the provider"],
+      ["dsa","Arrays and Hashing (6): Two Sum, Valid Anagram, Group Anagrams, Top K Frequent, Product Except Self, Valid Sudoku"],
+      ["design","Draw the 5-component RAG model from memory"],
+      ["notes","Mental models page: tokenization, sampling, tool calling"]]),
+    S({num:2,title:"FastAPI service and prompt patterns",why:"FastAPI wraps every project you will show. Logging cost per request from day one trains the cost thinking interviewers probe.",dod:"Streaming FastAPI service committed with cost logging; approval requested in writing.",behind:"Cut background tasks; keep streaming and Pydantic."},[
+      ["learn","FastAPI: Pydantic models, async endpoints, dependency injection"],
+      ["learn","Streaming responses and background tasks"],
+      ["learn","Prompt caching, model selection, cost and latency reasoning"],
+      ["build","FastAPI /chat service that streams tokens, validates I/O with Pydantic and logs tokens + cost per request"],
+      ["tracelink","Send the Project 0 proposal to Adam; ask for written approval and confirm Bedrock"],
+      ["dsa","Two Pointers (5) + Sliding Window (5)"],
+      ["design","Sketch an LLM API with cost controls: model routing + caching"],
+      ["mock","Mock: LLM fundamentals Q&A with Claude"],
+      ["notes","FastAPI request lifecycle; cost/latency table for model tiers"]])
+  ]),
+  P("Phase B: RAG on real, messy data","Weeks 3 to 6. Retrieval is where most candidates lose offers. You build it by hand, then on pgvector and Bedrock, then measure it. By the end you have a golden set, real numbers and your first applications out.",[
+    S({num:3,title:"Embeddings, vector search and transformers (L2)",why:"If you understand what the vector index is doing, you can debug any RAG system instead of guessing.",dod:"pgvector semantic search over a messy public dataset committed.",behind:"Cut the transformer deep-dive to one Jay Alammar read."},[
+      ["learn","Embeddings; cosine, dot product and L2; ANN indexes (HNSW vs IVFFlat)"],
+      ["learn","Chunking strategies and metadata filtering"],
+      ["learn","Transformers at L2: QKV attention, multi-head, positional encoding, causal masking (Illustrated Transformer)"],
+      ["build","Manual semantic search in raw Python: embed, store, cosine top-k"],
+      ["build","Move to pgvector with an HNSW index; compare chunk sizes on a real messy dataset (support tickets, logs or GitHub issues)"],
+      ["tracelink","If approved: scope the error-string data and confirm it stays on the office machine"],
+      ["dsa","Stack (7)"],
+      ["design","Chunking and index choice trade-offs"],
+      ["mock","Mock: embeddings and retrieval Q&A"],
+      ["notes","HNSW vs IVFFlat; chunking failure modes"]]),
+    S({num:4,title:"End-to-end RAG and Bedrock Knowledge Bases",why:"This is the first version of your portfolio anchor. The October review lands this week, so your proposal becomes promotion evidence.",dod:"Cited portable RAG plus a queryable Bedrock Knowledge Base, both committed and documented.",behind:"Move the Bedrock Knowledge Base to Week 5."},[
+      ["learn","Full RAG pipeline: ingest, chunk, embed, retrieve, generate with citations"],
+      ["learn","LangChain only where it adds value, after the manual build"],
+      ["learn","AWS Bedrock Knowledge Bases (managed RAG)"],
+      ["build","Project 1 v0: portable RAG (OpenAI/Claude + pgvector) with source citations"],
+      ["build","Bedrock Knowledge Base over the same corpus; compare answers"],
+      ["tracelink","October review: present the approved or started LLM feature to Adam as senior-level evidence"],
+      ["tracelink","If approval is denied or slipping, switch Project 0 to a public messy dataset and keep asking for any production LLM touch"],
+      ["dsa","Binary Search (7)"],
+      ["design","Design a support agent (RAG version)"],
+      ["mock","Mock: RAG architecture walkthrough"],
+      ["notes","Managed (Bedrock KB) vs custom RAG trade-offs"]]),
+    S({num:5,title:"Advanced RAG and Docker",why:"Hybrid search and reranking are asked about in almost every GenAI round. Having your own before/after numbers makes your answers impossible to fake.",dod:"Hybrid + rerank measurably beats the baseline; the app runs in Docker.",behind:"Cut parent-child chunks and contextual compression."},[
+      ["learn","Hybrid search (vector + BM25) and cross-encoder reranking"],
+      ["learn","Query rewriting, multi-query, contextual compression, parent-child chunks"],
+      ["learn","Docker and Compose (on Codespaces, not the 8 GB laptop)"],
+      ["build","Add hybrid retrieval + a reranker to Project 1; record before/after numbers"],
+      ["build","Containerize Project 1 with Docker Compose (app + Postgres/pgvector)"],
+      ["tracelink","Start building the LLM feature on Bedrock (office laptop)"],
+      ["dsa","Linked List (8)"],
+      ["design","RAG for 1M docs: index sizing and latency budget"],
+      ["mock","Mock: advanced retrieval Q&A"],
+      ["notes","Rerank before/after metrics; Compose diagram"]]),
+    S({num:6,title:"Golden set, RAGAS and first applications",why:"Evaluation is the most-probed skill in AI engineer interviews. From this week you can prove your RAG works with numbers, which is exactly when you start applying.",dod:"Golden set + RAGAS report committed; resume v1 out; first applications sent.",behind:"Use a 30-question golden set."},[
+      ["learn","RAGAS metrics: faithfulness, answer relevancy, context precision, context recall"],
+      ["learn","Retrieval metrics: precision@k, recall@k, MRR"],
+      ["build","30 to 50 question golden eval set"],
+      ["build","RAGAS eval harness + results table for Project 1"],
+      ["tracelink","Define the eval metrics for the TraceLink feature"],
+      ["jobs","Resume v1 done; LinkedIn headline: AI Engineer | RAG, LLMs, Evals, AWS Bedrock"],
+      ["jobs","Send the first 5 to 8 applications"],
+      ["dsa","Trees part 1 (8)"],
+      ["design","How do you know your RAG works? Answer with metrics"],
+      ["mock","Mock: evaluation round rehearsal"],
+      ["notes","Metric definitions and your target thresholds"]])
+  ]),
+  P("Phase C: Evals, production and shipping TraceLink","Weeks 7 to 10. This is what separates you from tutorial candidates: tracing, caching, retries, cost control, eval-gated CI, and a real feature live at TraceLink.",[
+    S({num:7,title:"Observability with Langfuse, and testing",why:"When an answer is wrong, a trace tells you which step failed. Being able to show that is a senior signal.",dod:"Traced pipeline, plus one debugging story written under Mistakes.",behind:"Keep 3 key tests only."},[
+      ["learn","Langfuse tracing: spans for retrieval, generation and tool calls; token and cost tracking"],
+      ["learn","pytest for the RAG pipeline"],
+      ["build","Instrument Project 1 with Langfuse"],
+      ["build","Tests: expected chunks are retrieved; eval thresholds hold"],
+      ["tracelink","Add Langfuse or CloudWatch/Bedrock observability to the feature"],
+      ["dsa","Trees part 2 (8)"],
+      ["design","The observability layer in a RAG system"],
+      ["mock","Mock: walk me through a trace when the answer is wrong"],
+      ["jobs","5 to 8 applications"],
+      ["notes","Trace anatomy; what each span tells you"]]),
+    S({num:8,title:"Production AI engineering and caching",why:"Cost and latency at 10x volume is a standard interview question. You will answer with your own measurements.",dod:"Measured cost/latency improvement recorded in the README.",behind:"Cut circuit breakers; keep retries, caching and routing."},[
+      ["learn","Retries, exponential backoff, circuit breakers, idempotency, fallbacks"],
+      ["learn","Batching, streaming, token cost control, model routing"],
+      ["build","Redis response cache + model router + retry/fallback in Project 1"],
+      ["build","Measure cost and latency before vs after"],
+      ["tracelink","Harden the feature: retries and cost caps"],
+      ["dsa","Tries (3) + Heap / Priority Queue (5)"],
+      ["design","LLM API with cost controls at 10x volume"],
+      ["mock","Mock: narrate a production failure"],
+      ["jobs","5 to 8 applications"],
+      ["notes","Cache hit rate and routing savings"]]),
+    S({num:9,title:"Eval-gated CI, deploy, and ship TraceLink",why:"A live production LLM feature on 8M real records is your resume centerpiece and your strongest promotion case at the same time.",dod:"Project 1 deployed with eval-in-CI; TraceLink feature live with metrics.",behind:"The deploy can slip to buffer week. Never skip shipping TraceLink."},[
+      ["learn","GitHub Actions running RAGAS on every PR"],
+      ["build","Eval-gated CI that blocks faithfulness and context-recall regressions"],
+      ["build","Deploy Project 1 publicly; record a 2-minute demo video"],
+      ["tracelink","Ship the LLM feature to production with evals and monitoring; capture the metrics"],
+      ["dsa","Backtracking (7)"],
+      ["design","Full RAG design end to end, timed at 30 minutes"],
+      ["mock","Mock: full RAG system-design round"],
+      ["jobs","5 to 8 applications"],
+      ["notes","CI pipeline diagram; shipped-feature metrics"]]),
+    S({num:10,title:"Polish, DSA checkpoint, apply harder",why:"A checkpoint week. The DSA result tells you whether to lean toward product companies and GCCs or toward GenAI startups with build rounds.",dod:"Project 1 is portfolio-grade; the DSA gate result is recorded.",behind:"If the DSA gate fails: add 15 to 30 minutes a day of DSA and lean toward startups."},[
+      ["build","Polish the Project 1 README: architecture, eval table, cost/latency, what changes at 10x"],
+      ["dsa","Graphs part 1 (8)"],
+      ["dsa","Timed check: 2 mediums in 40 minutes"],
+      ["jobs","Ramp to 8 to 10 applications a week; start asking for referrals"],
+      ["design","Review your notebook designs"],
+      ["mock","Mock: full loop simulation (DSA + RAG design + eval)"],
+      ["notes","Record the decision-benchmark result"]])
+  ]),
+  P("Phase D: Agents and MCP","Weeks 11 to 14. Agents are high-demand, but the senior skill is knowing when not to use one. You build the loop by hand, then with LangGraph, guardrails, human approval and your own MCP server.",[
+    S({num:11,title:"Agent fundamentals, built by hand",why:"Writing the loop yourself makes every framework transparent and lets you explain termination, state and cost clearly.",dod:"Working manual agent committed.",behind:"Cut memory; keep the tool loop and termination guard."},[
+      ["learn","Tool calling, agent state, memory, routing, termination"],
+      ["learn","Workflow vs agent: use the cheapest thing that works"],
+      ["build","Project 2 v0: raw Python agent loop (plan, call tool, observe, repeat) with a termination guard"],
+      ["dsa","Graphs part 2 (8)"],
+      ["design","Design an AI support agent"],
+      ["mock","Mock: agent design Q&A"],
+      ["jobs","8 to 10 applications"],
+      ["notes","Agent loop diagram; when NOT to use an agent"]]),
+    S({num:12,title:"LangGraph, human-in-the-loop and guardrails",why:"Agents that take actions need approval gates and least privilege. This is exactly what enterprise interviewers worry about.",dod:"LangGraph agent with human approval and guardrails committed.",behind:"Cut Bedrock Guardrails."},[
+      ["learn","LangGraph: typed state, conditional routing, cycles"],
+      ["learn","Human-in-the-loop: interrupt + checkpointer; approve, edit or reject"],
+      ["learn","Guardrails: prompt injection (OWASP LLM01), excessive agency (LLM06), least privilege"],
+      ["build","Rebuild Project 2 in LangGraph with an approval gate on high-risk tools"],
+      ["build","Input/output validation and scoped tool permissions"],
+      ["tracelink","Optional: evaluate Bedrock Guardrails for the shipped feature"],
+      ["dsa","1-D DP (8)"],
+      ["design","Guardrails for an agent that takes actions"],
+      ["mock","Mock: safety and guardrails Q&A"],
+      ["jobs","8 to 10 applications"]]),
+    S({num:13,title:"Your own MCP server and agent evals",why:"MCP is now the standard way agents connect to tools, and few candidates have built a server. Trajectory evals prove your agent is not burning money.",dod:"MCP server + agent trajectory eval committed.",behind:"A one-tool MCP server is enough."},[
+      ["learn","MCP primitives: tools, resources, prompts (Python SDK, FastMCP)"],
+      ["build","MCP server exposing a useful tool (query your RAG corpus or an ops API); test it in MCP Inspector"],
+      ["build","Wire the MCP server into Project 2"],
+      ["build","Agent evals: tool-call accuracy, goal accuracy, trajectory match, and a cap on tool calls"],
+      ["dsa","2-D DP (6)"],
+      ["design","MCP in an enterprise agent architecture"],
+      ["mock","Mock: MCP and agent eval Q&A"],
+      ["jobs","8 to 10 applications"]]),
+    S({num:14,title:"Polish Project 2, resume v2, full loop",why:"Everything is built. Now the story gets sharp: shipped TraceLink feature first, then two deep projects.",dod:"Both projects portfolio-grade; resume v2 live.",behind:"Move Greedy to Week 15."},[
+      ["build","Project 2 README: architecture, trajectory-eval results, guardrails, approval-flow demo video"],
+      ["jobs","Resume v2: lead with the shipped TraceLink feature and metrics; name model versions"],
+      ["jobs","Refresh applications and push referrals (10+ a week)"],
+      ["dsa","Intervals (6) + start Greedy"],
+      ["design","2 full timed design prompts"],
+      ["mock","Mock: full loop (DSA + system design + project deep-dive)"],
+      ["notes","Draft your STAR stories"]])
+  ]),
+  P("Phase E: Interview conversion","Weeks 15 to 18. You stop adding topics and start converting interviews into offers.",[
+    S({num:15,title:"System design mastery",why:"System design leads senior loops. Five designs you can draw and defend cover most prompts you will see.",dod:"All 5 designs drawn and defended in 30 minutes each.",behind:"Drop multi-tenant RAG."},[
+      ["design","RAG for 1M documents: design doc"],
+      ["design","Invoice / document extraction platform"],
+      ["design","Support agent (p99 under 1.5s, multi-tenant, permission-aware retrieval)"],
+      ["design","LLM API with cost controls"],
+      ["design","Multi-tenant RAG"],
+      ["dsa","Greedy (6) + re-solve 10 problems you missed"],
+      ["mock","Mock: 2 system-design rounds"],
+      ["jobs","10+ applications"]]),
+    S({num:16,title:"Evals, LLM theory and deep-dive drills",why:"Eval rounds are where you win or lose GenAI offers. Every question should get a metric and a fix.",dod:"You can answer any eval question with a metric and a fix.",behind:"Skip Bit Manipulation."},[
+      ["learn","Eval drills: faithfulness vs recall trap, precision@k, MRR, retrieval vs generation failure, p95, cost per query at 10x"],
+      ["learn","LLM theory bank: attention/QKV, sampling, tokenization cost, RAG vs fine-tuning"],
+      ["dsa","Math and Geometry (5) + Bit Manipulation (3)"],
+      ["mock","Mock: eval round + project deep-dive"],
+      ["jobs","10+ applications"]]),
+    S({num:17,title:"STAR stories and negotiation",why:"Ownership stories with numbers are the scarce signal. Negotiation prep turns a good offer into a strong package.",dod:"STAR bank complete; interviews scheduled.",behind:"Keep 4 strongest STAR stories."},[
+      ["notes","6 to 8 STAR stories, including the TraceLink production story with numbers"],
+      ["jobs","Negotiation prep: market bands and a notice-period buyout ask"],
+      ["jobs","10+ applications; follow up; schedule loops"],
+      ["dsa","Mixed timed set (5)"],
+      ["mock","Mock: behavioral + one full loop"]]),
+    S({num:18,title:"Convert offers",why:"The finish line of the plan. Decide with benchmarks, not emotion.",dod:"Offer in hand, or a strong active pipeline.",behind:"Use buffer weeks 19 and 20."},[
+      ["jobs","Run active loops and compare offers"],
+      ["jobs","Decide with the benchmarks: a strong product/GCC offer (about ₹22 to 25 LPA or more) means take it"],
+      ["mock","Company-specific mocks as needed"]])
+  ]),
+  P("Buffer","Weeks 19 and 20 absorb slippage. Using them is normal, not failure.",[
+    S({num:19,title:"Buffer: catch up",why:"Real life happens. This week exists so one bad week does not break the plan.",dod:"Anything slipped is closed.",behind:""},[
+      ["build","Finish anything that slipped (deploys, READMEs, demos)"],
+      ["jobs","Extra interview loops and follow-ups"]]),
+    S({num:20,title:"Buffer: offer and notice logistics",why:"Negotiation and notice periods take time in India; this keeps them from stalling momentum.",dod:"Offer accepted, notice plan agreed.",behind:""},[
+      ["jobs","Negotiate notice buyout/reimbursement before accepting"],
+      ["jobs","Handover plan for TraceLink"]])
+  ])];
+  const R=(key,title,items)=>({id:uid(),key,title,items:items.map(t=>({id:uid(),text:t}))});
+  return{
+    version:1,updated:"",
+    settings:{title:"Akshay's AI engineer roadmap",goal:"Move from Data Analyst at TraceLink to an Applied AI / GenAI Engineer role at a product company, GCC or funded startup by February 2027, with a shipped production LLM feature as the centrepiece.",start:"2026-09-28",target:"2027-02-14",theme:"system",lastBackup:""},
+    phases,
+    milestones:[
+      {id:uid(),title:"M1: RAG working with hybrid search, reranking and a golden set",week:6,done:false,date:""},
+      {id:uid(),title:"M2: Evals and observability in place; TraceLink LLM feature shipped",week:9,done:false,date:""},
+      {id:uid(),title:"M3: Agent + MCP server working, with trajectory evals",week:13,done:false,date:""},
+      {id:uid(),title:"M4: Offer in hand or a strong active pipeline",week:18,done:false,date:""}],
+    jobs:[],daily:{},
+    reference:[
+      R("why","Why you are doing this",[
+        "You already do Data-Scientist-level work in production. This plan only adds the missing layer: LLMs, RAG, evals, agents and interview conversion.",
+        "One shipped LLM feature on real TraceLink data outweighs a folder of tutorial projects.",
+        "Evaluation is the most-probed skill in AI engineer interviews. Every week you build it, you are building your edge.",
+        "The real pay jump comes from switching into an AI engineering role. The target band is ₹18 to 30 LPA at product companies and GCCs.",
+        "Consistency beats intensity. 45 minutes on a bad day keeps the streak and the momentum alive.",
+        "You do not need to feel ready to apply. Interviews are the diagnostic.",
+        "Every tick on this page is evidence you can show someone later."]),
+      R("principles","Guiding principles",[
+        "Concept, code, project, failure, debug, architecture, production, interview. Never course after course.",
+        "Ship over study: every week ends with something committed to GitHub.",
+        "Evals are the product. A RAG system or agent without evals is a demo.",
+        "Build on AWS Bedrock and one portable path (OpenAI/Claude + pgvector).",
+        "Cut ruthlessly. The roadmap is a tool, not a syllabus you owe anyone.",
+        "Apply early and iterate on rejections."]),
+      R("loop","Learning loop for every concept",[
+        "Learn: 30 to 45 minutes, one source only",
+        "Draw: one notebook page",
+        "Code it manually, no framework first",
+        "Explain it out loud without notes",
+        "Put it into a project",
+        "Break it with a failure scenario",
+        "Fix it and write the mistake down",
+        "Redo it with a framework only where it adds value",
+        "Write 3 interview questions and answer 2",
+        "Recall on day 1, 3, 7 and 21 (this tracker schedules it when you tick a Learn task)"]),
+      R("levels","Depth levels",[
+        "L1 Master: implement from scratch, explain trade-offs, defend under pushback (RAG, evals, embeddings, FastAPI, LLM fundamentals, your ML story, system design)",
+        "L2 Working: build with a framework, know the knobs, debug (LangGraph, agents, Docker, MCP, observability, guardrails, transformers)",
+        "L3 Tool literacy: use it and know when to reach for it (Qdrant, Redis, CI/CD details)"]),
+      R("skills","Skill status",[
+        "Core: LLM fundamentals, prompting, embeddings, RAG, RAG evals, FastAPI, production AI engineering, agents, LangGraph, guardrails, MCP, Bedrock, Langfuse, RAGAS, system design, DSA, interview storytelling",
+        "Known (Phase 0, revise only if out of touch): Python, concurrency, SQL, Git, ML fundamentals, classical metrics, AWS, pipelines",
+        "Compress: HTTP/APIs, testing, deep learning, transformers (L2), Redis/queues, cloud deploy, CI/CD",
+        "Defer: fine-tuning/LoRA (talking point only), vLLM/quantization, Kubernetes"]),
+      R("notebook","Notebook system",[
+        "One physical notebook with 5 sections: Mental models, Architecture, Mistakes, Interview questions, Things I keep forgetting",
+        "No rewriting lectures, no pretty notes",
+        "The Mistakes section becomes your incident stories in interviews",
+        "GitHub is the record; the notebook is for thinking"]),
+      R("dos","Dos",[
+        "Quantify every result: precision@k, MRR, faithfulness, p95 latency, cost per query, hallucination reduction",
+        "Write READMEs with the problem, architecture, eval table, cost/latency and what changes at 10x",
+        "Commit every day, even a small change",
+        "Keep a failure log",
+        "Name specific model versions on your resume",
+        "Get written approval before TraceLink data touches any external API; prefer Bedrock",
+        "Apply from Week 6 with a good-enough resume",
+        "Do 30 to 45 minutes of DSA every day if you target product companies or GCCs",
+        "Build one thing deeply rather than five shallow tutorials"]),
+      R("donts","Don'ts",[
+        "Don't take courses back to back",
+        "Don't use LangChain or LangGraph before building the idea by hand once",
+        "Don't build a generic chat-with-your-PDF bot",
+        "Don't skip DSA if you target product companies or GCCs",
+        "Don't wait to feel ready before applying",
+        "Don't put company data on the personal laptop or into external APIs without approval",
+        "Don't run local LLMs on the 8 GB laptop; use Colab, Codespaces and hosted APIs",
+        "Don't buy a chat subscription before you have API credits",
+        "Don't chase Kubernetes, fine-tuning or vLLM in this window",
+        "Don't plan around a counter-offer"]),
+      R("weekday","Weekday template (about 3 to 4 hours)",[
+        "06:45 to 07:30: DSA, 1 medium or 2 easy, timed",
+        "Day job",
+        "20:00 to 22:00: main learning and build, following the learning loop",
+        "22:00 to 22:30: revision, recall items due today, notebook",
+        "The order matters more than the clock: DSA when fresh, build in the long block, recall last"]),
+      R("weekend","Weekend template",[
+        "Saturday: 45 min DSA, 3 h build of the week's deliverable, 30 min README and commit, 30 min plan next week",
+        "Sunday: 45 min DSA, 1 h mock interview with Claude, 1 h applications and referrals, 1 h notebook and recall sweep, 30 min weekly review in this tracker"]),
+      R("lowenergy","Low-energy day minimum (45 minutes)",[
+        "20 min DSA (one easy problem)",
+        "15 min recall items due today",
+        "10 min one commit, even a README fix",
+        "Never zero days"]),
+      R("breakit","Break-it scenarios",[
+        "Retrieval returns zero relevant chunks: detect and recover",
+        "The LLM ignores context and answers from memory: diagnose faithfulness",
+        "Embedding model mismatch between query and index",
+        "A retrieved document contains a prompt injection",
+        "429 rate limit or timeout mid-request: retries, backoff, fallback model",
+        "An agent loops and calls an expensive tool nine times",
+        "Chunks too big (diluted) or too small (lost meaning)",
+        "A deleted document is still being retrieved",
+        "p95 latency blows the budget at 10x volume"]),
+      R("ai","Using Claude and other AI assistants",[
+        "Use it for explanations, code review, generating eval questions, mock interviews and debugging after you have tried",
+        "Hand-write the first implementation of every core concept",
+        "Never commit code you cannot explain line by line",
+        "If you cannot rebuild it without the assistant, you have not learned it yet"]),
+      R("bench","Decision benchmarks",[
+        "Failing DSA mediums by Week 10: add 15 to 30 min a day and lean toward GenAI startups with build rounds",
+        "Stuck at the resume stage: lead harder with the shipped TraceLink feature and metrics; use referrals",
+        "Strong early offer from a product company or GCC: take it",
+        "Behind on a week: use that week's cut line; protect DSA, shipping TraceLink and Project 1",
+        "Internal promotion is a parallel path, not the main one; don't rely on a counter-offer"]),
+      R("resources","Resources (one per topic at a time)",[
+        "Prompting: DeepLearning.AI ChatGPT Prompt Engineering for Developers; Anthropic and OpenAI docs",
+        "Transformers: Jay Alammar, The Illustrated Transformer; optional Karpathy, Let's build GPT",
+        "RAG: DeepLearning.AI Retrieval Augmented Generation course",
+        "Vector DB: pgvector docs; Qdrant docs for literacy",
+        "Evals: Chip Huyen, AI Engineering (evaluation chapters); Hamel Husain on evals; RAGAS docs",
+        "Observability: Langfuse docs",
+        "Agents: DeepLearning.AI AI Agents in LangGraph; LangGraph docs",
+        "MCP: modelcontextprotocol.io and the Python SDK",
+        "AWS: Bedrock Knowledge Bases, Guardrails and AgentCore docs",
+        "DSA: NeetCode 150"]),
+      R("budget","Budget and machines",[
+        "Free tiers first (Gemini free tier), then API credits; aim for under ₹4,000 a month",
+        "Use batch and prompt caching to cut eval costs",
+        "Personal 8 GB laptop: browser, editor, Colab, Codespaces",
+        "Office laptop: TraceLink data and the Project 0 build only"])
+    ],
+    ui:{whyIdx:0}
+  };
+}
+
+/* ============ storage ============ */
+let db=null,mode="idb",state=null,saveTimer=null,persisted=false;
+function openDB(){return new Promise((res,rej)=>{if(!window.indexedDB)return rej(new Error("IndexedDB is unavailable in this browser"));
+  const r=indexedDB.open("ai-roadmap-tracker",1);
+  r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains("kv"))d.createObjectStore("kv");if(!d.objectStoreNames.contains("files"))d.createObjectStore("files");};
+  r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error||new Error("Could not open IndexedDB"));});}
+function req(store,m,f){return new Promise((res,rej)=>{const t=db.transaction(store,m);const r=f(t.objectStore(store));
+  t.oncomplete=()=>res(r?r.result:undefined);t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error||new Error("Storage transaction aborted"));});}
+const kvGet=()=>req("kv","readonly",s=>s.get("state"));
+const kvPut=v=>req("kv","readwrite",s=>s.put(v,"state"));
+const fileGet=id=>req("files","readonly",s=>s.get(id));
+const filePut=o=>req("files","readwrite",s=>s.put(o,o.id));
+const fileDel=id=>req("files","readwrite",s=>s.delete(id));
+const fileKeys=()=>req("files","readonly",s=>s.getAllKeys());
+
+function setSaved(t,err){const e=$("#saved");if(e){e.textContent=t;e.className="saved"+(err?" err":"");}}
+function save(){setSaved("Saving…");clearTimeout(saveTimer);saveTimer=setTimeout(persist,300);}
+async function persist(){
+  saveTimer=null;state.updated=new Date().toISOString();
+  let err=null;
+  try{localStorage.setItem(LSK,JSON.stringify(state));}catch(e){err=e;}
+  if(mode==="idb"){try{await kvPut(JSON.parse(JSON.stringify(state)));err=null;}catch(e){err=e;}}
+  if(err){setSaved("Not saved",true);toast("Saving failed: "+err.message+". Export a backup now.");console.error(err);}
+  else setSaved("Saved "+new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}));
+  // cloud sync
+  if(fbUser)fbSave(JSON.parse(JSON.stringify(state))).then(()=>setSaved("☁️ "+new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}))).catch(()=>{});
+}
+window.addEventListener("beforeunload",e=>{if(saveTimer){try{state.updated=new Date().toISOString();localStorage.setItem(LSK,JSON.stringify(state));}catch(_){}}});
+
+function migrate(){
+  const d=seed();
+  state.settings=Object.assign({},d.settings,state.settings||{});
+  state.phases=state.phases||[];state.milestones=state.milestones||[];state.jobs=state.jobs||[];
+  state.daily=state.daily||{};state.reference=state.reference||[];state.ui=Object.assign({whyIdx:0},state.ui||{});
+  for(const p of state.phases){p.sections=p.sections||[];for(const s of p.sections){s.tasks=s.tasks||[];s.review=s.review||{};
+    for(const t of s.tasks){t.sources=t.sources||[];t.files=t.files||[];t.recall=t.recall||[];t.notes=t.notes||"";t.date=t.date||"";}}}
+}
+async function cleanOrphans(){if(mode!=="idb")return;try{const used=new Set();allTasks().forEach(t=>t.files.forEach(f=>used.add(f.id)));
+  const keys=await fileKeys();for(const k of keys)if(!used.has(k))await fileDel(k);}catch(e){console.error(e);}}
+
+/* ============ derived data ============ */
+const allSections=()=>state.phases.flatMap(p=>p.sections);
+const allTasks=()=>allSections().flatMap(s=>s.tasks);
+function prog(tasks){const n=tasks.length,d=tasks.filter(t=>t.done).length;return{n,d,pct:n?Math.round(d/n*100):0};}
+function cw(){return Math.floor(daysBetween(state.settings.start,todayISO())/7)+1;}
+function weekStart(num){return addDays(state.settings.start,(num-1)*7);}
+function weekRange(num){const s=weekStart(num);return fmt(s)+" to "+fmt(addDays(s,6));}
+const findWeek=n=>allSections().find(s=>s.num===n);
+function doneByDay(){const m={};for(const t of allTasks())if(t.done&&t.date)m[t.date]=(m[t.date]||0)+1;return m;}
+function activeDay(d,dbd){const l=state.daily[d];return (dbd[d]||0)>0||(l&&((+l.min||0)>0||(+l.dsa||0)>0));}
+function streak(){const dbd=doneByDay();let d=todayISO(),n=0;if(!activeDay(d,dbd))d=addDays(d,-1);
+  for(let i=0;i<500&&activeDay(d,dbd);i++){n++;d=addDays(d,-1);}return n;}
+function totals(){let min=0,dsa=0;for(const k in state.daily){min+=+state.daily[k].min||0;dsa+=+state.daily[k].dsa||0;}return{min,dsa};}
+function weekStats(num){const s=weekStart(num),e=addDays(s,6);let min=0,dsa=0,tasks=0;
+  for(const k in state.daily)if(k>=s&&k<=e){min+=+state.daily[k].min||0;dsa+=+state.daily[k].dsa||0;}
+  for(const t of allTasks())if(t.done&&t.date>=s&&t.date<=e)tasks++;
+  const apps=state.jobs.filter(j=>j.applied&&j.applied>=s&&j.applied<=e).length;return{min,dsa,tasks,apps};}
+function isMsWeek(n){return state.milestones.some(m=>+m.week===n);}
+
+/* ============ UI state ============ */
+let tab="today",openTasks=new Set(),closedTasks=new Set(),noteHeights=new Map(),filt={q:"",cat:"",hide:false},logDate=todayISO(),scrollTarget=null;
+
+/* ============ actions ============ */
+function toast(msg,undo){const t=$("#toast");t.innerHTML="";t.append(h("span",null,msg));
+  if(undo)t.append(h("button",{onclick:()=>{undo();t.classList.remove("show");}},"Undo"));
+  t.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove("show"),undo?7000:3500);}
+function withUndo(msg,fn){const snap=JSON.stringify(state);fn();save();render();toast(msg,()=>{state=JSON.parse(snap);save();render();});}
+function makeRecall(t){t.recall=[1,3,7,21].map(n=>({n,due:addDays(t.date,n),done:false}));}
+function toggleTask(t,sec,val){
+  const before=sec?prog(sec.tasks).pct:0;
+  t.done=val;
+  if(val){if(!t.date)t.date=todayISO();if(t.cat==="learn"&&!t.recall.length)makeRecall(t);}
+  else{t.date="";t.recall=[];}
+  save();
+  if(val&&sec&&before<100&&prog(sec.tasks).pct===100){celebrate();toast((sec.num?"Week "+sec.num:sec.title)+" complete. That is real progress.");}
+  render();
+}
+function move(arr,i,d){const j=i+d;if(j<0||j>=arr.length)return;[arr[i],arr[j]]=[arr[j],arr[i]];save();render();}
+
+/* ============ render: header / route / tabs ============ */
+function applyTheme(){const t=state.settings.theme;const dark=t==="dark"||(t==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);
+  document.documentElement.setAttribute("data-theme",dark?"dark":"light");}
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>state&&applyTheme());
+
+function renderHeader(){
+  const s=state.settings,hd=$("#hdr");hd.innerHTML="";
+  const lb=s.lastBackup,stale=!lb||daysBetween(lb,todayISO())>7;
+  hd.append(h("div",{class:"titlebar"},
+    h("div",{class:"titlebox"},ed(s,"title",{tag:"h1",cls:"title",ph:"Your roadmap title",onchange:()=>document.title=s.title}),ed(s,"goal",{cls:"goal",ph:"Your goal in one sentence",multi:true})),
+    h("div",{class:"hdr-actions"},h("span",{id:"saved",class:"saved"},"Saved"),
+      h("button",{class:"btn small"+(stale?" nudge":""),title:lb?"Last backup "+fmtY(lb):"No backup yet",onclick:exportBackup},stale?"Back up now":"Back up"),
+      h("button",{class:"btn small",onclick:()=>{s.theme=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";applyTheme();save();},"aria-label":"Toggle dark mode"},"Theme"),
+      fbUser
+        ? h("button",{class:"auth-btn",onclick:fbSignOut,title:"Signed in as "+fbUser.email+". Click to sign out."},
+            fbUser.photoURL?h("img",{class:"auth-avatar",src:fbUser.photoURL,alt:fbUser.displayName||"You",referrerpolicy:"no-referrer"}):h("span",{class:"auth-dot"}),
+            h("span",null,(fbUser.displayName||fbUser.email).split(" ")[0]),
+            h("span",{class:"sync-badge"},"☁️ Synced"))
+        : h("button",{class:"auth-btn",onclick:fbSignIn,id:"signin-btn",title:"Sign in with Google to sync across devices"},
+            h("svg",{width:"18",height:"18",viewBox:"0 0 18 18","aria-hidden":"true"},
+              h("path",{fill:"#4285F4",d:"M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z"}),
+              h("path",{fill:"#34A853",d:"M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z"}),
+              h("path",{fill:"#FBBC05",d:"M3.964 10.706A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.038l3.007-2.332Z"}),
+              h("path",{fill:"#EA4335",d:"M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.962L3.964 7.294C4.672 5.163 6.656 3.58 9 3.58Z"}))
+            ,"Sign in with Google")
+    )));
+  document.title=s.title||"AI Engineer Roadmap Tracker";
+}
+function renderRoute(){
+  const r=$("#route");r.innerHTML="";
+  const tasks=allTasks(),p=prog(tasks),c=cw();
+  const zero=allSections().filter(s=>s.num==null);
+  const nums=allSections().filter(s=>s.num!=null).sort((a,b)=>a.num-b.num);
+  const st=[{label:"0",title:"Phase 0",tasks:zero.flatMap(s=>s.tasks),num:0,go:()=>go(zero[0])}].concat(nums.map(s=>({label:String(s.num),title:"Week "+s.num+": "+s.title,tasks:s.tasks,num:s.num,go:()=>go(s)})));
+  let nowIdx=c<1?0:st.findIndex(x=>x.num===c);if(nowIdx<0)nowIdx=c>st[st.length-1].num?st.length-1:0;
+  const linePct=st.length>1?nowIdx/(st.length-1)*100:0;
+  let head;
+  if(c<1){head="Week 1 starts "+fmtY(state.settings.start)+". Phase 0 now: "+daysBetween(todayISO(),state.settings.start)+" days to go.";}
+  else{const w=findWeek(c);head="Week "+c+(w?": "+w.title:"")+".";}
+  const left=daysBetween(todayISO(),state.settings.target);
+  r.append(h("div",{class:"route-head"},
+    h("div",null,h("div",{class:"big"},head),h("div",{class:"sub"},left>=0?left+" days to your target date ("+fmtY(state.settings.target)+")":"Target date passed. Update it in Settings if the plan moved.")),
+    h("div",{class:"route-overall"},h("div",{class:"spread sub"},h("span",null,p.d+" of "+p.n+" tasks done"),h("b",{style:"color:var(--ink)"},p.pct+"%")),bar(p.pct))));
+  const track=h("div",{class:"route-track"},h("div",{class:"route-line"},h("i",{style:"width:"+linePct+"%"})));
+  st.forEach((x,i)=>{const pp=prog(x.tasks).pct;
+    const b=h("button",{class:"stn"+(pp===100&&x.tasks.length?" full":"")+(i===nowIdx?" now":"")+(x.num&&isMsWeek(x.num)?" ms":""),style:"--p:"+pp,title:x.title+" ("+pp+"% done)",onclick:x.go},
+      h("div",{class:"dot"},h("span",null,pp===100&&x.tasks.length?"✓":x.label)),i===nowIdx?h("span",{class:"now-tag"},"Now"):h("span",null,x.num===0?"P0":"W"+x.label));
+    track.append(b);});
+  r.append(h("div",{class:"route-scroll"},track));
+  r.append(h("div",{class:"legend"},
+    h("span",null,h("i",{style:"background:var(--accent)"}),"Ring fills as you tick tasks"),
+    h("span",null,h("i",{style:"background:var(--gold)"}),"Gold line shows where the calendar is"),
+    h("span",null,h("i",{style:"border:2px solid var(--gold)"}),"Milestone week")));
+}
+function go(sec){if(!sec)return;tab="roadmap";filt={q:"",cat:"",hide:false};
+  const zero=sec.num==null;if(zero)allSections().filter(s=>s.num==null).forEach(s=>s.open=true);else sec.open=true;
+  scrollTarget="sec-"+sec.id;save();render();}
+function renderTabs(){const n=$("#tabs");n.innerHTML="";
+  [["today","Today"],["roadmap","Roadmap"],["jobs","Applications"],["reference","Playbook"],["settings","Settings and backup"]].forEach(([k,l])=>
+    n.append(h("button",{class:"tab"+(tab===k?" on":""),"aria-current":tab===k?"page":null,onclick:()=>{tab=k;render();window.scrollTo({top:$("#tabs").offsetTop-10});}},l)));}
+
+/* ============ task & section views ============ */
+function taskView(t,arr,sec){
+  const hasDetails=!!(t.notes||t.sources.length||t.files.length);
+  const open=!closedTasks.has(t.id)&&(openTasks.has(t.id)||hasDetails);
+  const li=h("li",{class:"task"+(t.done?" done":"")});
+  const cb=h("input",{type:"checkbox",class:"chk",checked:t.done,"aria-label":"Mark complete: "+t.text});
+  cb.addEventListener("change",()=>toggleTask(t,sec,cb.checked));
+  const bits=[];if(t.sources.length)bits.push(t.sources.length+(t.sources.length>1?" sources":" source"));if(t.files.length)bits.push(t.files.length+(t.files.length>1?" links":" link"));if(t.notes)bits.push("notes");
+  li.append(h("div",{class:"trow"},cb,ed(t,"text",{cls:"ttext",ph:"Describe the task",label:"Task"}),
+    h("div",{class:"tmeta"},t.done&&t.date?h("span",{class:"when"},"Done "+fmt(t.date)):null,bits.length?h("span",{class:"icons"},bits.join(", ")):null,chip(t.cat),
+      h("button",{class:"btn ghost small","aria-expanded":String(open),onclick:()=>{
+        if(open){closedTasks.add(t.id);openTasks.delete(t.id);}else{openTasks.add(t.id);closedTasks.delete(t.id);}
+        render();}},open?"Close":"Details"))));
+  if(open)li.append(detailView(t,arr,sec));
+  return li;
+}
+function detailView(t,arr,sec){
+  const d=h("div",{class:"tdetail"});
+  const date=h("input",{type:"date",value:t.date,"aria-label":"Completed on"});
+  date.addEventListener("change",()=>{t.date=date.value;if(t.date&&!t.done)t.done=true;if(!t.date){t.done=false;t.recall=[];}
+    else if(t.cat==="learn"&&!t.recall.some(r=>r.done))makeRecall(t);save();render();});
+  const i=arr.indexOf(t);
+  d.append(h("div",{class:"drow row"},h("label",{class:"inline"},"Completed on",date),h("label",{class:"inline"},"Category",catSelect(t.cat,v=>{t.cat=v;save();render();})),
+    h("span",{style:"flex:1"}),
+    h("button",{class:"btn small",onclick:()=>move(arr,i,-1),"aria-label":"Move task up"},"Up"),
+    h("button",{class:"btn small",onclick:()=>move(arr,i,1),"aria-label":"Move task down"},"Down"),
+    h("button",{class:"btn small danger",onclick:()=>withUndo("Task deleted",()=>{arr.splice(arr.indexOf(t),1);openTasks.delete(t.id);})},"Delete task")));
+  const notes=h("textarea",{placeholder:"What you learned, what broke, what to remember…","aria-label":"Notes"});notes.value=t.notes;
+  // restore any user-resized height
+  if(noteHeights.has(t.id))notes.style.height=noteHeights.get(t.id);
+  notes.addEventListener("input",()=>{t.notes=notes.value;save();});
+  notes.addEventListener("mouseup",()=>{if(notes.style.height)noteHeights.set(t.id,notes.style.height);});
+  d.append(h("div",null,h("h4",null,"Notes"),notes));
+  // sources
+  const sl=h("ul",{class:"list-mini"});
+  if(!t.sources.length)sl.append(h("li",{class:"empty"},"No sources yet. Add the doc, video or course you studied from."));
+  t.sources.forEach((s,k)=>{
+    const safe=/^(https?:|file:|mailto:)/i.test(s.url||"");
+    const sTi=h("input",{type:"text",value:s.title||"",placeholder:"Name","aria-label":"Source name",style:"flex:1;min-width:120px"});
+    const sUr=h("input",{type:"url",value:s.url||"",placeholder:"URL","aria-label":"Source URL",style:"flex:1.4;min-width:140px"});
+    sTi.addEventListener("input",()=>{s.title=sTi.value.trim();save();});
+    sUr.addEventListener("input",()=>{s.url=sUr.value.trim()&&!/^[a-z]+:/i.test(sUr.value.trim())?"https://"+sUr.value.trim():sUr.value.trim();save();});
+    const openBtn=s.url&&safe?h("a",{href:s.url,target:"_blank",rel:"noopener",class:"btn small"},"Open"):null;
+    sl.append(h("li",null,h("div",{class:"addrow",style:"flex-wrap:wrap;gap:6px"},sTi,sUr,openBtn,h("button",{class:"btn ghost small",onclick:()=>withUndo("Source removed",()=>{t.sources.splice(k,1);save();render();})},"Remove"))));
+  });
+  const st=h("input",{type:"text",placeholder:"Source name (e.g. RAGAS docs)","aria-label":"Source name"}),su=h("input",{type:"url",placeholder:"Link (optional)","aria-label":"Source link"});
+  const addS=()=>{const ti=st.value.trim(),u=su.value.trim();if(!ti&&!u)return;t.sources.push({title:ti,url:u&&!/^[a-z]+:/i.test(u)?"https://"+u:u});st.value="";su.value="";save();render();};
+  [st,su].forEach(x=>x.addEventListener("keydown",e=>{if(e.key==="Enter")addS();}));
+  d.append(h("div",null,h("h4",null,"Sources"),sl,h("div",{class:"addrow"},st,su,h("button",{class:"btn small",onclick:addS},"Add source"))));
+  // files & links
+  const fl=h("ul",{class:"list-mini"});
+  if(!t.files.length)fl.append(h("li",{class:"empty"},"No links yet. Attach an image or resource link, or just record a name."));
+  t.files.forEach((f,k)=>{
+    const fNm=h("input",{type:"text",value:f.name||"",placeholder:"Label","aria-label":"Link label",style:"flex:1;min-width:100px"});
+    const fUr=h("input",{type:"url",value:f.url||"",placeholder:"URL (optional)","aria-label":"Link URL",style:"flex:1.4;min-width:140px"});
+    fNm.addEventListener("input",()=>{f.name=fNm.value;save();});
+    // on URL change: save + refresh thumbnail in place
+    const thumbWrap=h("div",null);
+    const refreshThumb=()=>{
+      thumbWrap.innerHTML="";
+      const u=f.url&&/^https?:\/\//i.test(f.url)?f.url:null;
+      const isImg=u&&/\.(png|jpe?g|gif|webp|svg|avif)(\?.*)?$/i.test(u);
+      if(isImg)thumbWrap.append(h("a",{href:u,target:"_blank",rel:"noopener"},h("img",{src:u,alt:f.name||"image",style:"max-width:120px;max-height:80px;border-radius:4px;display:block;margin-top:4px;"})));
+    };
+    fUr.addEventListener("input",()=>{
+      const raw=fUr.value.trim();
+      f.url=raw&&!/^[a-z]+:\/\//i.test(raw)?"https://"+raw:raw;
+      save();refreshThumb();
+    });
+    refreshThumb();
+    const safeUrl=f.url&&/^https?:\/\//i.test(f.url)?f.url:null;
+    const openBtn=safeUrl?h("a",{href:safeUrl,target:"_blank",rel:"noopener",class:"btn small"},"Open"):null;
+    fl.append(h("li",null,
+      h("div",{class:"addrow",style:"flex-wrap:wrap;gap:6px"},fNm,fUr,openBtn,
+        h("button",{class:"btn ghost small",onclick:()=>withUndo("Entry removed",()=>{t.files.splice(k,1);save();render();})},"Remove")),
+      thumbWrap));
+  });
+  const flu=h("input",{type:"url",placeholder:"Paste image or resource URL","aria-label":"Link URL"});
+  const fln=h("input",{type:"text",placeholder:"Label (optional)","aria-label":"Link label"});
+  const addL=()=>{const u=flu.value.trim(),n=fln.value.trim();if(!u)return;const full=/^[a-z]+:\/\//i.test(u)?u:"https://"+u;t.files.push({id:uid(),name:n||u,url:full,stored:false});flu.value="";fln.value="";save();render();};
+  [flu,fln].forEach(x=>x.addEventListener("keydown",e=>{if(e.key==="Enter")addL();}));
+  d.append(h("div",null,h("h4",null,"Files & Links"),fl,
+    h("div",{class:"addrow"},flu,fln,h("button",{class:"btn small",onclick:addL},"Attach link"))));
+  if(t.recall.length)d.append(h("div",null,h("h4",null,"Recall schedule"),h("div",{class:"sub"},t.recall.map(r=>"Day "+r.n+" ("+fmt(r.due)+")"+(r.done?" done":"")).join(", "))));
+  return d;
+}
+async function openFile(f){try{const r=await fileGet(f.id);if(!r)throw new Error("The file is no longer stored in this browser.");
+  const url=URL.createObjectURL(r.blob);const a=h("a",{href:url,target:"_blank",rel:"noopener"});
+  if(!/^(image|application\/pdf|text|video|audio)/.test(r.type||""))a.download=r.name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
+  catch(e){alert("Could not open file: "+e.message);}}
+
+function taskMatches(t){const q=filt.q.toLowerCase();return(!q||(t.text+" "+t.notes+" "+t.sources.map(s=>s.title).join(" ")).toLowerCase().includes(q))&&(!filt.cat||t.cat===filt.cat)&&(!filt.hide||!t.done);}
+const filterOn=()=>!!(filt.q||filt.cat||filt.hide);
+ 
+function sectionView(ph,sec,idx,pIdx){
+  const fOn=filterOn(),tasks=fOn?sec.tasks.filter(taskMatches):sec.tasks;
+  if(fOn&&!tasks.length)return null;
+  const open=fOn||sec.open,p=prog(sec.tasks),c=cw();
+  const current=sec.num!=null?sec.num===c:(c<1&&pIdx===0);
+  const wrap=h("div",{class:"week"+(open?" open":"")+(current&&sec.num!=null?" current":"")+(p.pct===100&&p.n?" complete":""),id:"sec-"+sec.id});
+  const label=sec.num!=null?"Week "+sec.num:(pIdx===0?"0."+(idx+1):"Part "+(idx+1));
+  const head=h("div",{class:"week-head",role:"button",tabindex:"0","aria-expanded":String(open)},
+    h("span",{class:"chev","aria-hidden":"true"},"▸"),
+    h("span",{class:"badge"+(sec.num!=null&&isMsWeek(sec.num)?" ms":"")},label),
+    h("span",{class:"week-title"},sec.title||"Untitled"),
+    sec.num!=null?h("span",{class:"week-dates"},weekRange(sec.num)):null,
+    h("div",{class:"mini"},bar(p.pct)),h("span",{class:"count"},p.d+"/"+p.n));
+  const toggle=()=>{sec.open=!sec.open;save();render();};
+  head.addEventListener("click",toggle);head.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target===head){e.preventDefault();toggle();}});
+  wrap.append(head);
+  if(!open)return wrap;
+  const body=h("div",{class:"week-body"});
+  body.append(h("div",{class:"field",style:"margin-top:12px"},h("label",null,"Title"),ed(sec,"title",{ph:"Section title",label:"Section title",onchange:()=>{const t=wrap.querySelector(".week-head .week-title");if(t)t.textContent=sec.title||"Untitled";}})));
+  body.append(h("div",{class:"fields"},
+    h("div",{class:"field"},h("label",null,"Why this matters"),ed(sec,"why",{ph:"Why you are doing this",multi:true})),
+    h("div",{class:"field"},h("label",null,"Done when"),ed(sec,"dod",{ph:"Definition of done",multi:true})),
+    h("div",{class:"field"},h("label",null,pIdx===0?"Fail rule / if behind":"If behind, cut this"),ed(sec,"behind",{ph:"What to drop if short on time",multi:true}))));
+  const ul=h("ul",{class:"tasks"});
+  if(!tasks.length)ul.append(h("li",{class:"empty"},"No tasks yet. Add the first one below."));
+  tasks.forEach(t=>ul.append(taskView(t,sec.tasks,sec)));
+  body.append(ul);
+  const nt=h("input",{type:"text",placeholder:"Add a task","aria-label":"New task"});let ncat=sec.tasks.length?sec.tasks[sec.tasks.length-1].cat:"learn";
+  const cs=catSelect(ncat,v=>ncat=v);
+  const add=()=>{const v=nt.value.trim();if(!v)return;sec.tasks.push(T(ncat,v));save();render();setTimeout(()=>{const x=document.querySelector("#sec-"+sec.id+" .addrow input");x&&x.focus();},0);};
+  nt.addEventListener("keydown",e=>{if(e.key==="Enter")add();});
+  body.append(h("div",{class:"addrow"},nt,cs,h("button",{class:"btn small primary",onclick:add},"Add task")));
+  if(sec.num!=null)body.append(reviewView(sec));
+  const ni=h("input",{type:"number",min:"1",value:sec.num==null?"":sec.num,"aria-label":"Week number",style:"width:70px"});
+  ni.addEventListener("change",()=>{sec.num=ni.value===""?null:Math.max(1,parseInt(ni.value,10)||1);save();render();});
+  body.append(h("div",{class:"sec-tools"},h("label",{class:"inline"},"Week number",ni),
+    h("button",{class:"btn small",onclick:()=>move(ph.sections,idx,-1)},"Move up"),
+    h("button",{class:"btn small",onclick:()=>move(ph.sections,idx,1)},"Move down"),
+    h("button",{class:"btn small danger",onclick:()=>withUndo("Section deleted",()=>ph.sections.splice(ph.sections.indexOf(sec),1))},"Delete section")));
+  wrap.append(body);return wrap;
+}
+function reviewView(sec){
+  const r=sec.review,ws=weekStats(sec.num);
+  const det=h("details",{style:"margin-top:14px;border-top:1px solid var(--line);padding-top:10px"});
+  if(r._open)det.open=true;det.addEventListener("toggle",()=>{r._open=det.open;save();});
+  const fld=(k,label,ph)=>{const ta=h("textarea",{placeholder:ph,style:"min-height:52px","aria-label":label});ta.value=r[k]||"";ta.addEventListener("input",()=>{r[k]=ta.value;save();});return h("div",{class:"field"},h("label",null,label),ta);};
+  const ot=h("select",{"aria-label":"On track"});["","Yes","Partly","No"].forEach(o=>ot.append(h("option",{value:o,selected:(r.onTrack||"")===o},o||"Choose")));
+  ot.addEventListener("change",()=>{r.onTrack=ot.value;save();});
+  const cm=h("input",{type:"number",min:"0",value:r.commits||"","aria-label":"Commits"});cm.addEventListener("input",()=>{r.commits=cm.value;save();});
+  det.append(h("summary",{style:"cursor:pointer;font-weight:600"},"Weekly review"+(r.onTrack?" ("+r.onTrack.toLowerCase()+" on track)":"")),
+    h("p",{class:"sub"},"This week so far: "+(ws.min/60).toFixed(1)+" h logged, "+ws.dsa+" DSA problems, "+ws.tasks+" tasks done, "+ws.apps+" applications."),
+    h("div",{class:"row",style:"margin-bottom:10px"},h("label",{class:"inline"},"On track?",ot),h("label",{class:"inline"},"Commits",cm)),
+    h("div",{class:"fields"},fld("shipped","What shipped","What you committed or deployed"),fld("failure","Biggest failure and fix","What broke and how you fixed it"),fld("cut","Change or cut next week","What you will drop or adjust")));
+  return det;
+}
+ 
+/* ============ views ============ */
+function vToday(){
+  const g=h("div",{class:"grid2"}),L=h("div",{class:"col"}),Rt=h("div",{class:"col"});g.append(L,Rt);
+  const c=cw(),sec=c>=1?findWeek(c):null;
+  // this week
+  const wk=h("section",{class:"panel"});
+  if(sec){const p=prog(sec.tasks);
+    wk.append(h("div",{class:"spread"},h("div",null,h("h2",null,"Week "+sec.num+": "+sec.title),h("div",{class:"sub"},weekRange(sec.num)+(isMsWeek(sec.num)?". Milestone week.":""))),
+      h("button",{class:"btn small",onclick:()=>go(sec)},"Open in roadmap")),
+      h("p",{style:"margin:10px 0"},sec.why),h("div",{class:"spread sub"},h("span",null,p.d+" of "+p.n+" done"),h("span",null,p.pct+"%")),bar(p.pct),
+      h("ul",{class:"tasks"},sec.tasks.map(t=>taskView(t,sec.tasks,sec))));
+    if(sec.dod)wk.append(h("p",{class:"sub",style:"margin-bottom:0"},"Done when: "+sec.dod));
+  }else if(c<1){const zs=state.phases[0]?state.phases[0].sections:[];const zt=zs.flatMap(s=>s.tasks),p=prog(zt);
+    wk.append(h("h2",null,"Before Week 1: Phase 0"),h("p",{class:"sub"},"Week 1 starts "+fmtY(state.settings.start)+". Use these days to set up and pass the self-tests on what you already know."),
+      h("div",{class:"spread sub"},h("span",null,p.d+" of "+p.n+" done"),h("span",null,p.pct+"%")),bar(p.pct));
+    zs.forEach(s=>{const pend=s.tasks;if(!pend.length)return;wk.append(h("h3",null,s.title),h("ul",{class:"tasks"},pend.map(t=>taskView(t,s.tasks,s))));});
+  }else wk.append(h("h2",null,"You are past the planned weeks"),h("p",{class:"sub"},"Add a new week in the Roadmap tab, or move the target date in Settings."));
+  L.append(wk);
+  // recall
+  const due=[];const td=todayISO();
+  for(const t of allTasks())for(const r of t.recall)if(!r.done&&r.due<=td)due.push([t,r]);
+  const rc=h("section",{class:"panel"},h("h2",null,"Recall due today"),h("p",{class:"sub"},"Spaced recall keeps what you learned. Explain it out loud without notes, then tick it."));
+  if(!due.length)rc.append(h("p",{class:"empty"},"Nothing due. Tick a Learn task and its recalls appear here on day 1, 3, 7 and 21."));
+  else{const ul=h("ul",{class:"tasks"});due.sort((a,b)=>a[1].due<b[1].due?-1:1).forEach(([t,r])=>{const cb=h("input",{type:"checkbox",class:"chk","aria-label":"Recall done"});
+    cb.addEventListener("change",()=>{r.done=true;r.doneOn=td;save();render();toast("Recall logged");});
+    ul.append(h("li",{class:"task"},h("div",{class:"trow"},cb,h("div",{class:"ttext"},t.text),h("div",{class:"tmeta"},h("span",{class:"icons"},"Day "+r.n+(r.due<td?", due "+fmt(r.due):""))))));});rc.append(ul);}
+  L.append(rc);
+  // log
+  const lg=h("section",{class:"panel"},h("h2",null,"Log your day"),h("p",{class:"sub"},"Minutes and DSA problems feed your streak, hours and the activity map."));
+  const dI=h("input",{type:"date",value:logDate,"aria-label":"Log date"});dI.addEventListener("change",()=>{logDate=dI.value||todayISO();render();});
+  const entry=()=>state.daily[logDate]||(state.daily[logDate]={min:0,dsa:0,note:""});
+  const cur=state.daily[logDate]||{min:0,dsa:0,note:""};
+  const mI=h("input",{type:"number",min:"0",value:cur.min||0,"aria-label":"Minutes studied"}),sI=h("input",{type:"number",min:"0",value:cur.dsa||0,"aria-label":"DSA problems solved"});
+  mI.addEventListener("change",()=>{entry().min=Math.max(0,+mI.value||0);save();render();});sI.addEventListener("change",()=>{entry().dsa=Math.max(0,+sI.value||0);save();render();});
+  const nI=h("textarea",{placeholder:"One line: what you did, what clicked, what is stuck","aria-label":"Day note"});nI.value=cur.note||"";nI.addEventListener("input",()=>{entry().note=nI.value;save();});
+  const bump=(k,n)=>{const e=entry();e[k]=(+e[k]||0)+n;save();render();};
+  lg.append(h("div",{class:"row",style:"margin:10px 0"},h("label",{class:"inline"},"Day",dI),h("label",{class:"inline"},"Minutes",mI),h("button",{class:"btn small",onclick:()=>bump("min",30)},"+30 min"),
+    h("label",{class:"inline"},"DSA solved",sI),h("button",{class:"btn small",onclick:()=>bump("dsa",1)},"+1 problem")),nI);
+  L.append(lg);
+  // right column
+  const p=prog(allTasks()),tt=totals(),apps=state.jobs.filter(j=>j.stage&&j.stage!=="Wishlist").length,ints=state.jobs.filter(j=>j.stage==="Interviewing"||j.stage==="Offer").length;
+  Rt.append(h("div",{class:"stats"},
+    h("div",{class:"stat"},h("b",null,p.pct+"%"),h("span",null,"Roadmap done")),
+    h("div",{class:"stat"},h("b",null,streak()),h("span",null,"Day streak")),
+    h("div",{class:"stat"},h("b",null,(tt.min/60).toFixed(1)),h("span",null,"Hours logged")),
+    h("div",{class:"stat"},h("b",null,tt.dsa),h("span",null,"DSA solved")),
+    h("div",{class:"stat"},h("b",null,apps),h("span",null,"Applications")),
+    h("div",{class:"stat"},h("b",null,ints),h("span",null,"Interviews"))));
+  const why=state.reference.find(r=>r.key==="why");
+  if(why&&why.items.length){const i=(state.ui.whyIdx||0)%why.items.length;
+    Rt.append(h("section",{class:"why"},h("p",null,why.items[i].text),h("div",{class:"row"},h("span",{class:"sub",style:"flex:1"},"Why you are doing this"),
+      h("button",{class:"btn ghost small",onclick:()=>{state.ui.whyIdx=i+1;save();render();}},"Show another"))));}
+  Rt.append(milestonesPanel());
+  Rt.append(heatPanel());
+  return g;
+}
+function milestonesPanel(){
+  const pn=h("section",{class:"panel"},h("h2",null,"Milestones"),h("p",{class:"sub"},"The four gates that matter. Each one changes how you show up in interviews."));
+  const ul=h("ul",{class:"ms-list"});
+  state.milestones.forEach((m,i)=>{const cb=h("input",{type:"checkbox",class:"chk",checked:m.done,"aria-label":"Milestone reached"});
+    cb.addEventListener("change",()=>{m.done=cb.checked;m.date=cb.checked?(m.date||todayISO()):"";save();if(cb.checked){celebrate();toast("Milestone reached. Well earned.");}render();});
+    const wI=h("input",{type:"number",min:"1",value:m.week||"",style:"width:60px","aria-label":"Target week"});wI.addEventListener("change",()=>{m.week=+wI.value||"";save();render();});
+    ul.append(h("li",null,cb,h("div",{style:"flex:1;min-width:0"},ed(m,"title",{ph:"Milestone",multi:true}),
+      h("div",{class:"row sub",style:"margin-top:4px"},h("label",{class:"inline"},"By week",wI),m.done&&m.date?h("span",{class:"when"},"Reached "+fmt(m.date)):null,
+        h("button",{class:"btn ghost small",onclick:()=>withUndo("Milestone deleted",()=>state.milestones.splice(i,1))},"Delete")))));});
+  pn.append(ul,h("button",{class:"btn small",style:"margin-top:8px",onclick:()=>{state.milestones.push({id:uid(),title:"New milestone",week:"",done:false,date:""});save();render();}},"Add milestone"));
+  return pn;
+}
+function heatPanel(){
+  const pn=h("section",{class:"panel"},h("h2",null,"Activity"),h("p",{class:"sub"},"Each square is a day, Monday at the top. Darker means more got done."));
+  const dbd=doneByDay(),s=addDays(state.settings.start,-7),endT=state.settings.target>todayISO()?state.settings.target:todayISO();
+  const weeks=Math.max(1,Math.ceil((daysBetween(s,endT)+1)/7)),td=todayISO(),grid=h("div",{class:"heat",role:"img","aria-label":"Daily activity map"});
+  for(let i=0;i<weeks*7;i++){const d=addDays(s,i),l=state.daily[d]||{};const tk=dbd[d]||0,mn=+l.min||0,ds=+l.dsa||0;
+    const score=Math.min(4,tk+(mn>=30?1:0)+(mn>=120?1:0)+(ds>0?1:0));
+    grid.append(h("i",{class:(score?"l"+score:"")+(d===td?" today":"")+(d>td?" out":""),title:fmtY(d)+": "+tk+" tasks, "+mn+" min, "+ds+" DSA"}));}
+  pn.append(grid);return pn;
+}
+function vRoadmap(){
+  const w=h("div");
+  const q=h("input",{type:"search",placeholder:"Search tasks, notes and sources",value:filt.q,"aria-label":"Search"});
+  q.addEventListener("input",()=>{filt.q=q.value;const pos=q.selectionStart;render();const nq=document.querySelector(".toolbar input[type=search]");if(nq){nq.focus();nq.setSelectionRange(pos,pos);}});
+  const cs=h("select",{"aria-label":"Filter by category"});cs.append(h("option",{value:""},"All categories"));for(const k in CATS)cs.append(h("option",{value:k,selected:filt.cat===k},CATS[k][0]));
+  cs.addEventListener("change",()=>{filt.cat=cs.value;render();});
+  const hd=h("input",{type:"checkbox",checked:filt.hide});hd.addEventListener("change",()=>{filt.hide=hd.checked;render();});
+  const setAll=v=>{allSections().forEach(s=>s.open=v);save();render();};
+  w.append(h("div",{class:"toolbar"},q,cs,h("label",{class:"inline"},hd,"Hide completed"),
+    h("button",{class:"btn small",onclick:()=>{const c=cw();const s=c>=1?findWeek(c):(state.phases[0]&&state.phases[0].sections[0]);go(s);}},"Go to this week"),
+    h("button",{class:"btn small",onclick:()=>setAll(true)},"Expand all"),h("button",{class:"btn small",onclick:()=>setAll(false)},"Collapse all")));
+  let shown=0;
+  state.phases.forEach((ph,pi)=>{
+    const secs=ph.sections.map((s,i)=>sectionView(ph,s,i,pi)).filter(Boolean);
+    if(filterOn()&&!secs.length)return;shown++;
+    const p=prog(ph.sections.flatMap(s=>s.tasks));
+    const pw=h("section",{class:"phase"});
+    pw.append(h("div",{class:"phase-head"},h("div",{style:"flex:1;min-width:260px"},ed(ph,"name",{tag:"h2",cls:"phase-name",ph:"Phase name"}),ed(ph,"why",{cls:"phase-why",ph:"Why this phase matters",multi:true})),
+      h("div",{class:"phase-meta"},h("div",{class:"spread sub"},h("span",null,p.d+" of "+p.n+" tasks"),h("b",{style:"color:var(--ink)"},p.pct+"%")),bar(p.pct,pi===0),
+        h("div",{class:"row",style:"margin-top:10px"},
+          h("button",{class:"btn small",onclick:()=>{ph.sections.push(S({title:"New week",open:true,num:nextWeekNum(ph)},[]));save();render();}},"Add week or part"),
+          h("button",{class:"btn ghost small",onclick:()=>move(state.phases,pi,-1),"aria-label":"Move phase up"},"Up"),
+          h("button",{class:"btn ghost small",onclick:()=>move(state.phases,pi,1),"aria-label":"Move phase down"},"Down"),
+          h("button",{class:"btn ghost small danger",onclick:()=>withUndo("Phase deleted",()=>state.phases.splice(pi,1))},"Delete")))));
+    secs.forEach(s=>pw.append(s));
+    w.append(pw);
+  });
+  if(filterOn()&&!shown)w.append(h("p",{class:"empty"},"No tasks match. Clear the search or category filter."));
+  w.append(h("button",{class:"btn",onclick:()=>{state.phases.push(P("New phase","Why this phase matters",[]));save();render();}},"Add phase"));
+  return w;
+}
+function nextWeekNum(ph){const nums=allSections().map(s=>s.num).filter(n=>n!=null);if(ph===state.phases[0]&&ph.sections.every(s=>s.num==null))return null;return nums.length?Math.max(...nums)+1:1;}
+function vJobs(){
+  const pn=h("section",{class:"panel"});
+  const c=cw(),ws=c>=1?weekStats(c):{apps:0};
+  pn.append(h("div",{class:"spread"},h("div",null,h("h2",null,"Applications"),
+    h("p",{class:"sub"},"Target: 5 to 8 a week from Week 6, 8 to 10 from Week 10, 10+ from Week 14. This week: "+ws.apps+".")),
+    h("button",{class:"btn primary small",onclick:()=>{state.jobs.unshift({id:uid(),company:"",role:"",source:"",stage:"Applied",applied:todayISO(),next:"",link:"",notes:""});save();render();}},"Add application")));
+  const counts=h("div",{class:"stage-chips"});STAGES.forEach(s=>{const n=state.jobs.filter(j=>j.stage===s).length;counts.append(h("span",null,s+" ",h("b",null,n)));});pn.append(counts);
+  if(!state.jobs.length){pn.append(h("p",{class:"empty"},"No applications yet. Add companies you want to target as Wishlist, then move them along as they progress."));return pn;}
+  const tb=h("tbody");
+  state.jobs.forEach((j,i)=>{const sel=h("select",{"aria-label":"Stage"});STAGES.forEach(s=>sel.append(h("option",{value:s,selected:j.stage===s},s)));
+    sel.addEventListener("change",()=>{j.stage=sel.value;save();render();});
+    const dt=h("input",{type:"date",value:j.applied||"","aria-label":"Applied on"});dt.addEventListener("change",()=>{j.applied=dt.value;save();});
+    const safe=/^https?:/i.test(j.link||"");
+    tb.append(h("tr",null,h("td",null,ed(j,"company",{ph:"Company"})),h("td",null,ed(j,"role",{ph:"Role"})),h("td",null,sel),h("td",null,dt),
+      h("td",null,ed(j,"source",{ph:"Referral, Naukri…"})),h("td",null,ed(j,"next",{ph:"Next step",multi:true})),
+      h("td",null,ed(j,"link",{ph:"Job link"}),safe?h("a",{href:j.link,target:"_blank",rel:"noopener",class:"sub"},"Open"):null),
+      h("td",null,ed(j,"notes",{ph:"Notes",multi:true})),h("td",null,h("button",{class:"btn ghost small danger",onclick:()=>withUndo("Application deleted",()=>state.jobs.splice(i,1))},"Delete"))));});
+  pn.append(h("div",{class:"table-wrap"},h("table",null,h("thead",null,h("tr",null,["Company","Role","Stage","Applied","Source","Next step","Link","Notes",""].map(x=>h("th",null,x)))),tb)));
+  return pn;
+}
+function vRef(){
+  const w=h("div");
+  w.append(h("p",{class:"sub",style:"margin-top:0"},"Your rules of the game. Everything here is editable: click any line to change it, add your own, remove what does not serve you."));
+  const cards=h("div",{class:"cards"});
+  state.reference.forEach((c,ci)=>{const ul=h("ul");
+    c.items.forEach((it,ii)=>ul.append(h("li",null,h("div",{class:"li-row"},ed(it,"text",{multi:true,ph:"Write something"}),
+      h("button",{class:"x",title:"Remove line","aria-label":"Remove line",onclick:()=>withUndo("Line removed",()=>c.items.splice(ii,1))},"×")))));
+    const ni=h("input",{type:"text",placeholder:"Add a line","aria-label":"New line"});const add=()=>{const v=ni.value.trim();if(!v)return;c.items.push({id:uid(),text:v});save();render();};
+    ni.addEventListener("keydown",e=>{if(e.key==="Enter")add();});
+    cards.append(h("section",{class:"panel card"},h("div",{class:"spread"},ed(c,"title",{tag:"h2",ph:"Card title"}),
+      h("button",{class:"btn ghost small danger",onclick:()=>withUndo("Card deleted",()=>state.reference.splice(ci,1))},"Delete")),ul,h("div",{class:"addrow"},ni,h("button",{class:"btn small",onclick:add},"Add"))));});
+  w.append(cards,h("button",{class:"btn",onclick:()=>{state.reference.push({id:uid(),key:"",title:"New card",items:[]});save();render();}},"Add card"));
+  return w;
+}
+function vSettings(){
+  const g=h("div",{class:"grid2"}),L=h("div",{class:"col"}),Rt=h("div",{class:"col"});g.append(L,Rt);
+  const s=state.settings;
+  const sd=h("input",{type:"date",value:s.start,"aria-label":"Week 1 start"}),tg=h("input",{type:"date",value:s.target,"aria-label":"Target date"});
+  sd.addEventListener("change",()=>{if(sd.value){s.start=sd.value;save();render();}});tg.addEventListener("change",()=>{if(tg.value){s.target=tg.value;save();render();}});
+  const th=h("select",{"aria-label":"Theme"});[["system","Match my device"],["light","Light"],["dark","Dark"]].forEach(([v,l])=>th.append(h("option",{value:v,selected:s.theme===v},l)));
+  th.addEventListener("change",()=>{s.theme=th.value;applyTheme();save();});
+  L.append(h("section",{class:"panel"},h("h2",null,"Plan dates"),h("p",{class:"sub"},"Week dates and the Now marker are calculated from the Week 1 start. Moving it shifts every week."),
+    h("div",{class:"row",style:"margin-top:10px"},h("label",{class:"inline"},"Week 1 starts",sd),h("label",{class:"inline"},"Target date",tg)),
+    h("h3",null,"Appearance"),h("label",{class:"inline"},"Theme",th)));
+  const imp=h("input",{type:"file",accept:"application/json,.json","aria-label":"Import backup"});imp.addEventListener("change",()=>{if(imp.files[0])importBackup(imp.files[0]);});
+  L.append(h("section",{class:"panel"},h("h2",null,"Backup"),
+    h("p",null,"Everything saves automatically in this browser, on this computer, a moment after each change. Open this same file in the same browser and you continue exactly where you left off."),
+    h("p",{class:"sub"},"Clearing browsing data, private windows, or a different browser start empty. A weekly backup file protects you, including attached files."),
+    h("div",{class:"row",style:"margin-top:8px"},h("button",{class:"btn primary",onclick:exportBackup},"Download backup"),h("span",{class:"btn filebtn"},"Restore from backup",imp)),
+    h("p",{class:"sub"},s.lastBackup?"Last backup: "+fmtY(s.lastBackup):"No backup downloaded yet.")));
+  const stor=h("section",{class:"panel"},h("h2",null,"Storage status"));
+  stor.append(h("p",{class:"sub"},mode==="idb"?"Saving to IndexedDB with a copy in localStorage. File attachments are supported.":"IndexedDB is blocked here, so saving uses localStorage only and file attachments are off. Chrome or Edge support both for local files."));
+  stor.append(h("p",{class:"sub"},persisted?"The browser granted persistent storage, so it will not clear this data on its own.":"Persistent storage was not granted. Data is still saved, but download backups regularly."));
+  const est=h("p",{class:"sub"});stor.append(est);
+  if(navigator.storage&&navigator.storage.estimate)navigator.storage.estimate().then(e=>{est.textContent="Using "+fsize(e.usage||0)+" of about "+fsize(e.quota||0)+" available.";});
+  Rt.append(stor);
+  Rt.append(h("section",{class:"panel"},h("h2",null,"Reset"),h("p",{class:"sub"},"Download a backup first. Restoring the default roadmap replaces all phases, tasks and notes."),
+    h("div",{class:"row"},h("button",{class:"btn danger",onclick:()=>{if(confirm("Replace everything with the default roadmap? Your ticks, notes and applications will be lost unless you have a backup.")){const th0=state.settings.theme;state=seed();state.settings.theme=th0;save();render();toast("Default roadmap restored");}}},"Restore default roadmap"))));
+  Rt.append(h("section",{class:"panel"},h("h2",null,"How to use this"),h("ul",{style:"padding-left:18px;margin:6px 0"},
+    ["Click any text to edit it. Press Enter to finish a single line.","Tick a task to mark it done; the date fills in with today and can be changed in Details.","Details holds notes, sources, files and the recall schedule.","Ticking a Learn task schedules recall on day 1, 3, 7 and 21 in the Today tab.","Log minutes and DSA problems daily to keep your streak.","Fill the weekly review every Sunday.","Download a backup every week."].map(x=>h("li",null,x)))));
+  return g;
+}
+ 
+/* ============ backup ============ */
+function blobToData(b){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(r.error);r.readAsDataURL(b);});}
+function dataToBlob(d,type){const b=atob(d.split(",")[1]||"");const u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return new Blob([u],{type:type||""});}
+async function exportBackup(){
+  try{const files=[];if(mode==="idb"){const ids=new Set();allTasks().forEach(t=>t.files.forEach(f=>f.stored&&ids.add(f.id)));
+      for(const id of ids){const r=await fileGet(id);if(r)files.push({id,name:r.name,type:r.type,size:r.size,data:await blobToData(r.blob)});}}
+    state.settings.lastBackup=todayISO();
+    const blob=new Blob([JSON.stringify({app:"ai-roadmap-tracker",version:1,exported:new Date().toISOString(),state,files})],{type:"application/json"});
+    const a=h("a",{href:URL.createObjectURL(blob),download:"ai-roadmap-backup-"+todayISO()+".json"});document.body.append(a);a.click();a.remove();
+    save();render();toast("Backup downloaded");}
+  catch(e){alert("Backup failed: "+e.message);console.error(e);}
+}
+async function importBackup(file){
+  try{const p=JSON.parse(await file.text());if(!p.state||!Array.isArray(p.state.phases))throw new Error("This file is not a roadmap backup.");
+    if(!confirm("Replace everything in the tracker with the backup from "+(p.exported?new Date(p.exported).toLocaleString():"an unknown date")+"?"))return;
+    if(mode==="idb")for(const f of p.files||[])await filePut({id:f.id,name:f.name,type:f.type,size:f.size||0,blob:dataToBlob(f.data,f.type)});
+    state=p.state;migrate();applyTheme();save();render();toast("Backup restored");}
+  catch(e){alert("Restore failed: "+e.message);console.error(e);}
+}
+ 
+/* ============ celebration ============ */
+function celebrate(){
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+  const c=$("#fx"),x=c.getContext("2d");c.width=innerWidth;c.height=innerHeight;
+  const cols=["#1F6F5C","#D9981A","#3B6FB6","#B5476B","#4DB396","#F2B94A"];
+  const ps=Array.from({length:150},()=>({x:innerWidth/2,y:innerHeight*.32,vx:(Math.random()-.5)*15,vy:-Math.random()*13-3,s:Math.random()*7+4,c:cols[Math.random()*cols.length|0],r:Math.random()*6,vr:(Math.random()-.5)*.4}));
+  let f=0;(function tick(){x.clearRect(0,0,c.width,c.height);for(const p of ps){p.vy+=.38;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);x.restore();}
+    if(++f<120)requestAnimationFrame(tick);else x.clearRect(0,0,c.width,c.height);})();
+}
+ 
+/* ============ render root & boot ============ */
+function render(){
+  const y=window.scrollY;
+  renderHeader();renderRoute();renderTabs();
+  const m=$("#main");m.innerHTML="";m.append(({today:vToday,roadmap:vRoadmap,jobs:vJobs,reference:vRef,settings:vSettings})[tab]());
+  $("#foot").textContent=(fbUser?"☁️ Synced to cloud ("+fbUser.email+") + local backup. ":"💾 Saved in this browser only — sign in to sync across devices. ")+"Last change "+(state.updated?new Date(state.updated).toLocaleString():"not yet")+".";
+  if(scrollTarget){const el=document.getElementById(scrollTarget);scrollTarget=null;if(el)el.scrollIntoView({behavior:"smooth",block:"start"});}
+  else window.scrollTo(0,y);
+  if(!saveTimer&&state.updated)setSaved("Saved");
+}
+async function boot(){
+  let ls=null;try{ls=JSON.parse(localStorage.getItem(LSK)||"null");}catch(_){}
+  try{db=await openDB();let s=await kvGet();if(ls&&(!s||(ls.updated||"")>(s.updated||"")))s=ls;state=s||seed();}
+  catch(e){console.error(e);mode="ls";state=ls||seed();}
+  migrate();applyTheme();
+  const c=cw();const cur=c>=1?findWeek(c):null;if(cur&&!state.updated)cur.open=true;
+  render();
+  if(!state.updated)persist();
+  cleanOrphans();
+  if(navigator.storage&&navigator.storage.persist){try{persisted=await navigator.storage.persisted()||await navigator.storage.persist();}catch(_){}}
+  if(mode==="ls")toast("File attachments are off in this browser. Saving still works.");
+}
+boot().catch(e=>{document.body.prepend(h("p",{style:"color:#B4442F;padding:16px;font-weight:600"},"The tracker failed to start: "+e.message));console.error(e);});
+</script>
+</body>
+</html>
