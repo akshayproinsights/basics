@@ -159,7 +159,7 @@ nav.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin:20px 0 
 .week-head{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;flex-wrap:wrap}
 .badge{flex:none;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
 .badge.ms{background:var(--gold-soft);color:var(--ink);border:1px solid var(--gold)}
-.week-title{flex:1;min-width:180px;font-weight:600}
+.week-title{flex:1;min-width:180px;font-weight:600;cursor:text}
 .week-dates{font-size:13px;color:var(--muted);white-space:nowrap}
 .mini{width:90px;flex:none}
 .count{font-size:13px;color:var(--muted);min-width:44px;text-align:right}
@@ -933,10 +933,12 @@ function sectionView(ph,sec,idx,pIdx){
   const current=sec.num!=null?sec.num===c:(c<1&&pIdx===0);
   const wrap=h("div",{class:"week"+(open?" open":"")+(current&&sec.num!=null?" current":"")+(p.pct===100&&p.n?" complete":""),id:"sec-"+sec.id});
   const label=sec.num!=null?"Week "+sec.num:(pIdx===0?"0."+(idx+1):"Part "+(idx+1));
+  const titleEl=ed(sec,"title",{ph:"Week title",label:"Section title",cls:"week-title",onchange:()=>{}});
+  titleEl.addEventListener("click",ev=>ev.stopPropagation());
   const head=h("div",{class:"week-head",role:"button",tabindex:"0","aria-expanded":String(open)},
     h("span",{class:"chev","aria-hidden":"true"},"▸"),
     h("span",{class:"badge"+(sec.num!=null&&isMsWeek(sec.num)?" ms":"")},label),
-    h("span",{class:"week-title"},sec.title||"Untitled"),
+    titleEl,
     sec.num!=null?h("span",{class:"week-dates"},weekRange(sec.num)):null,
     h("div",{class:"mini"},bar(p.pct)),h("span",{class:"count"},p.d+"/"+p.n));
   const toggle=()=>{sec.open=!sec.open;save();render();};
@@ -944,7 +946,6 @@ function sectionView(ph,sec,idx,pIdx){
   wrap.append(head);
   if(!open)return wrap;
   const body=h("div",{class:"week-body"});
-  body.append(h("div",{class:"field",style:"margin-top:12px"},h("label",null,"Title"),ed(sec,"title",{ph:"Section title",label:"Section title",onchange:()=>{const t=wrap.querySelector(".week-head .week-title");if(t)t.textContent=sec.title||"Untitled";}})));
   body.append(h("div",{class:"fields"},
     h("div",{class:"field"},h("label",null,"Why this matters"),ed(sec,"why",{ph:"Why you are doing this",multi:true})),
     h("div",{class:"field"},h("label",null,"Done when"),ed(sec,"dod",{ph:"Definition of done",multi:true})),
