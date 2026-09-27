@@ -933,12 +933,12 @@ function sectionView(ph,sec,idx,pIdx){
   const current=sec.num!=null?sec.num===c:(c<1&&pIdx===0);
   const wrap=h("div",{class:"week"+(open?" open":"")+(current&&sec.num!=null?" current":"")+(p.pct===100&&p.n?" complete":""),id:"sec-"+sec.id});
   const label=sec.num!=null?"Week "+sec.num:(pIdx===0?"0."+(idx+1):"Part "+(idx+1));
-  const titleEl=ed(sec,"title",{ph:"Week title",label:"Section title",cls:"week-title",onchange:()=>{}});
-  titleEl.addEventListener("click",ev=>ev.stopPropagation());
+  const renameBtn=h("button",{class:"btn ghost small",title:"Rename",style:"flex:none;padding:2px 6px;font-size:13px;opacity:.6",onclick:ev=>{ev.stopPropagation();const v=prompt("Rename section:",sec.title||"");if(v!==null){sec.title=v.trim()||sec.title;save();render();}}},"✎");
   const head=h("div",{class:"week-head",role:"button",tabindex:"0","aria-expanded":String(open)},
     h("span",{class:"chev","aria-hidden":"true"},"▸"),
     h("span",{class:"badge"+(sec.num!=null&&isMsWeek(sec.num)?" ms":"")},label),
-    titleEl,
+    h("span",{class:"week-title"},sec.title||"Untitled"),
+    renameBtn,
     sec.num!=null?h("span",{class:"week-dates"},weekRange(sec.num)):null,
     h("div",{class:"mini"},bar(p.pct)),h("span",{class:"count"},p.d+"/"+p.n));
   const toggle=()=>{sec.open=!sec.open;save();render();};
@@ -946,6 +946,7 @@ function sectionView(ph,sec,idx,pIdx){
   wrap.append(head);
   if(!open)return wrap;
   const body=h("div",{class:"week-body"});
+  body.append(h("div",{class:"field",style:"margin-top:12px"},h("label",null,"Title"),ed(sec,"title",{ph:"Section title",label:"Section title",onchange:()=>{const t=wrap.querySelector(".week-head .week-title");if(t)t.textContent=sec.title||"Untitled";}})));
   body.append(h("div",{class:"fields"},
     h("div",{class:"field"},h("label",null,"Why this matters"),ed(sec,"why",{ph:"Why you are doing this",multi:true})),
     h("div",{class:"field"},h("label",null,"Done when"),ed(sec,"dod",{ph:"Definition of done",multi:true})),
