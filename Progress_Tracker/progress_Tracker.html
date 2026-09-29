@@ -160,7 +160,15 @@ nav.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin:20px 0 
 .badge{flex:none;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
 .badge.ms{background:var(--gold-soft);color:var(--ink);border:1px solid var(--gold)}
 .week-title{flex:1;min-width:180px;font-weight:600;cursor:text}
-.week-dates{font-size:13px;color:var(--muted);white-space:nowrap}
+.week-dates{font-size:13px;color:var(--muted);white-space:nowrap;cursor:pointer;border-radius:6px;padding:2px 6px;transition:background .15s}
+.week-dates:hover{background:var(--accent-soft);color:var(--accent)}
+.date-pop-wrap{position:relative;display:inline-block}
+.date-pop{position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);z-index:999;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;box-shadow:0 8px 32px rgba(0,0,0,.18);min-width:270px;display:flex;flex-direction:column;gap:10px}
+.date-pop h5{margin:0;font-size:13px;font-weight:600;color:var(--ink)}
+.date-pop label.push-lbl{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);cursor:pointer}
+.date-pop .pop-btns{display:flex;gap:8px;justify-content:flex-end}
+.date-pop-arrow{position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:12px;height:6px;overflow:hidden}
+.date-pop-arrow::after{content:"";display:block;width:10px;height:10px;background:var(--surface);border:1px solid var(--line);transform:rotate(45deg);margin:-5px auto 0;border-radius:2px}
 .mini{width:90px;flex:none}
 .count{font-size:13px;color:var(--muted);min-width:44px;text-align:right}
 .chev{display:inline-block;transition:transform .15s;color:var(--muted)}
@@ -737,8 +745,51 @@ const allSections=()=>state.phases.flatMap(p=>p.sections);
 const allTasks=()=>allSections().flatMap(s=>s.tasks);
 function prog(tasks){const n=tasks.length,d=tasks.filter(t=>t.done).length;return{n,d,pct:n?Math.round(d/n*100):0};}
 function cw(){return Math.floor(daysBetween(state.settings.start,todayISO())/7)+1;}
-function weekStart(num){return addDays(state.settings.start,(num-1)*7);}
-function weekRange(num){const s=weekStart(num);return fmt(s)+" to "+fmt(addDays(s,6));}
+function weekStart(num,sec){const base=addDays(state.settings.start,(num-1)*7);return sec&&sec.startOffset?addDays(base,sec.startOffset):base;}
+function weekRange(num,sec){const s=weekStart(num,sec);return fmt(s)+" to "+fmt(addDays(s,6));}
+function makeDateChip(sec){
+  const wrap=h("div",{class:"date-pop-wrap"});
+  const chip=h("span",{class:"week-dates",title:"Click to change this week's start date"},weekRange(sec.num,sec));
+  let popOpen=false;
+  const closePop=()=>{const p=wrap.querySelector(".date-pop");if(p)p.remove();popOpen=false;};
+  chip.addEventListener("click",ev=>{
+    ev.stopPropagation();
+    if(popOpen){closePop();return;}
+    popOpen=true;
+    const currentStart=weekStart(sec.num,sec);
+    const dIn=h("input",{type:"date",value:currentStart,"aria-label":"New week start"});
+    const pushCb=h("input",{type:"checkbox",id:"push-cb-"+sec.id,checked:true});
+    const pop=h("div",{class:"date-pop"},
+      h("div",{class:"date-pop-arrow"}),
+      h("h5",null,"📅 Change week start"),
+      dIn,
+      h("label",{class:"push-lbl","for":"push-cb-"+sec.id},pushCb,"Push following weeks by same delta"),
+      h("div",{class:"pop-btns"},
+        h("button",{class:"btn ghost small",onclick:ev2=>{ev2.stopPropagation();closePop();},"aria-label":"Cancel"},"Cancel"),
+        h("button",{class:"btn primary small",onclick:ev2=>{
+          ev2.stopPropagation();
+          const newVal=dIn.value;if(!newVal){closePop();return;}
+          const oldStart=weekStart(sec.num,sec);
+          const delta=daysBetween(oldStart,newVal);
+          if(delta===0){closePop();return;}
+          if(pushCb.checked){
+            // Shift global start by same delta — all weeks move together
+            state.settings.start=addDays(state.settings.start,delta);
+            // Clear any per-section offsets on this and later sections so they move with the global start
+            allSections().forEach(s=>{if(s.num!=null&&s.num>=sec.num)s.startOffset=0;});
+          } else {
+            // Only this week: store a per-section offset (accumulates if changed multiple times)
+            sec.startOffset=(sec.startOffset||0)+delta;
+          }
+          save();render();closePop();
+          toast("📅 Week "+sec.num+" moved "+Math.abs(delta)+" day"+(Math.abs(delta)>1?"s":"")+(delta>0?" forward":" back")+(pushCb.checked?" — all following weeks shifted too.":"."));
+        },"aria-label":"Apply"},"Apply")));
+    document.addEventListener("click",function outside(e){if(!wrap.contains(e.target)){closePop();document.removeEventListener("click",outside);}});
+    wrap.append(pop);
+  });
+  wrap.append(chip);
+  return wrap;
+}
 const findWeek=n=>allSections().find(s=>s.num===n);
 function doneByDay(){const m={};for(const t of allTasks())if(t.done&&t.date)m[t.date]=(m[t.date]||0)+1;return m;}
 function activeDay(d,dbd){const l=state.daily[d];return (dbd[d]||0)>0||(l&&((+l.min||0)>0||(+l.dsa||0)>0));}
@@ -875,12 +926,12 @@ function detailView(t,arr,sec){
     sTi.addEventListener("input",()=>{s.title=sTi.value.trim();save();});
     sUr.addEventListener("input",()=>{s.url=sUr.value.trim()&&!/^[a-z]+:/i.test(sUr.value.trim())?"https://"+sUr.value.trim():sUr.value.trim();save();});
     const openBtn=s.url&&safe?h("a",{href:s.url,target:"_blank",rel:"noopener",class:"btn small"},"Open"):null;
-    sl.append(h("li",null,h("div",{class:"addrow",style:"flex-wrap:wrap;gap:6px"},sTi,sUr,openBtn,h("button",{class:"btn ghost small",onclick:()=>withUndo("Source removed",()=>{t.sources.splice(k,1);save();render();})},"Remove"))));
+    sl.append(h("li",null,h("div",{class:"addrow",style:"flex-wrap:wrap;gap:6px"},sUr,sTi,openBtn,h("button",{class:"btn ghost small",onclick:()=>withUndo("Source removed",()=>{t.sources.splice(k,1);save();render();})},"Remove"))));
   });
   const st=h("input",{type:"text",placeholder:"Source name (e.g. RAGAS docs)","aria-label":"Source name"}),su=h("input",{type:"url",placeholder:"Link (optional)","aria-label":"Source link"});
   const addS=()=>{const ti=st.value.trim(),u=su.value.trim();if(!ti&&!u)return;t.sources.push({title:ti,url:u&&!/^[a-z]+:/i.test(u)?"https://"+u:u});st.value="";su.value="";save();render();};
   [st,su].forEach(x=>x.addEventListener("keydown",e=>{if(e.key==="Enter")addS();}));
-  d.append(h("div",null,h("h4",null,"Sources"),sl,h("div",{class:"addrow"},st,su,h("button",{class:"btn small",onclick:addS},"Add source"))));
+  d.append(h("div",null,h("h4",null,"Sources"),sl,h("div",{class:"addrow"},su,st,h("button",{class:"btn small",onclick:addS},"Add source"))));
   // files & links
   const fl=h("ul",{class:"list-mini"});
   if(!t.files.length)fl.append(h("li",{class:"empty"},"No links yet. Attach an image or resource link, or just record a name."));
@@ -939,7 +990,7 @@ function sectionView(ph,sec,idx,pIdx){
     h("span",{class:"badge"+(sec.num!=null&&isMsWeek(sec.num)?" ms":"")},label),
     h("span",{class:"week-title"},sec.title||"Untitled"),
     renameBtn,
-    sec.num!=null?h("span",{class:"week-dates"},weekRange(sec.num)):null,
+    sec.num!=null?makeDateChip(sec):null,
     h("div",{class:"mini"},bar(p.pct)),h("span",{class:"count"},p.d+"/"+p.n));
   const toggle=()=>{sec.open=!sec.open;save();render();};
   head.addEventListener("click",toggle);head.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target===head){e.preventDefault();toggle();}});
@@ -991,7 +1042,7 @@ function vToday(){
   // this week
   const wk=h("section",{class:"panel"});
   if(sec){const p=prog(sec.tasks);
-    wk.append(h("div",{class:"spread"},h("div",null,h("h2",null,"Week "+sec.num+": "+sec.title),h("div",{class:"sub"},weekRange(sec.num)+(isMsWeek(sec.num)?". Milestone week.":""))),
+    wk.append(h("div",{class:"spread"},h("div",null,h("h2",null,"Week "+sec.num+": "+sec.title),h("div",{class:"sub"},weekRange(sec.num,sec)+(isMsWeek(sec.num)?". Milestone week.":""))),
       h("button",{class:"btn small",onclick:()=>go(sec)},"Open in roadmap")),
       h("p",{style:"margin:10px 0"},sec.why),h("div",{class:"spread sub"},h("span",null,p.d+" of "+p.n+" done"),h("span",null,p.pct+"%")),bar(p.pct),
       h("ul",{class:"tasks"},sec.tasks.map(t=>taskView(t,sec.tasks,sec))));
