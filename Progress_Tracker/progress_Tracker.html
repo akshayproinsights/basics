@@ -160,15 +160,22 @@ nav.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin:20px 0 
 .badge{flex:none;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
 .badge.ms{background:var(--gold-soft);color:var(--ink);border:1px solid var(--gold)}
 .week-title{flex:1;min-width:180px;font-weight:600;cursor:text}
-.week-dates{font-size:13px;color:var(--muted);white-space:nowrap;cursor:pointer;border-radius:6px;padding:2px 6px;transition:background .15s}
+.week-dates{font-size:13px;color:var(--muted);white-space:nowrap;cursor:pointer;border-radius:6px;padding:2px 7px;transition:background .15s,color .15s;user-select:none}
 .week-dates:hover{background:var(--accent-soft);color:var(--accent)}
-.date-pop-wrap{position:relative;display:inline-block}
-.date-pop{position:absolute;top:calc(100% + 6px);left:50%;transform:translateX(-50%);z-index:999;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;box-shadow:0 8px 32px rgba(0,0,0,.18);min-width:270px;display:flex;flex-direction:column;gap:10px}
-.date-pop h5{margin:0;font-size:13px;font-weight:600;color:var(--ink)}
-.date-pop label.push-lbl{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);cursor:pointer}
-.date-pop .pop-btns{display:flex;gap:8px;justify-content:flex-end}
-.date-pop-arrow{position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:12px;height:6px;overflow:hidden}
-.date-pop-arrow::after{content:"";display:block;width:10px;height:10px;background:var(--surface);border:1px solid var(--line);transform:rotate(45deg);margin:-5px auto 0;border-radius:2px}
+.date-pop-wrap{position:relative;display:inline-flex;align-items:center}
+.date-pop{
+  position:fixed;z-index:9999;
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:12px;padding:16px 18px;
+  box-shadow:0 12px 40px rgba(0,0,0,.22);
+  min-width:280px;display:flex;flex-direction:column;gap:12px;
+  animation:popIn .15s ease
+}
+@keyframes popIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.date-pop h5{margin:0;font-size:13px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:6px}
+.date-pop .dp-date{width:100%;box-sizing:border-box}
+.date-pop label.push-lbl{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);cursor:pointer;line-height:1.4}
+.date-pop .pop-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:2px}
 .mini{width:90px;flex:none}
 .count{font-size:13px;color:var(--muted);min-width:44px;text-align:right}
 .chev{display:inline-block;transition:transform .15s;color:var(--muted)}
@@ -749,43 +756,58 @@ function weekStart(num,sec){const base=addDays(state.settings.start,(num-1)*7);r
 function weekRange(num,sec){const s=weekStart(num,sec);return fmt(s)+" to "+fmt(addDays(s,6));}
 function makeDateChip(sec){
   const wrap=h("div",{class:"date-pop-wrap"});
+  wrap.addEventListener("click",ev=>ev.stopPropagation());
   const chip=h("span",{class:"week-dates",title:"Click to change this week's start date"},weekRange(sec.num,sec));
-  let popOpen=false;
-  const closePop=()=>{const p=wrap.querySelector(".date-pop");if(p)p.remove();popOpen=false;};
+  let currentPop=null;
+  const closePop=()=>{
+    if(currentPop){currentPop.remove();currentPop=null;}
+  };
   chip.addEventListener("click",ev=>{
     ev.stopPropagation();
-    if(popOpen){closePop();return;}
-    popOpen=true;
+    if(currentPop){closePop();return;}
+    const rect=chip.getBoundingClientRect();
     const currentStart=weekStart(sec.num,sec);
-    const dIn=h("input",{type:"date",value:currentStart,"aria-label":"New week start"});
-    const pushCb=h("input",{type:"checkbox",id:"push-cb-"+sec.id,checked:true});
+    const dIn=h("input",{type:"date",value:currentStart,"aria-label":"New week start",class:"dp-date"});
+    const cbId="push-cb-"+sec.id+"-"+Date.now();
+    const pushCb=h("input",{type:"checkbox",id:cbId,checked:true});
     const pop=h("div",{class:"date-pop"},
-      h("div",{class:"date-pop-arrow"}),
-      h("h5",null,"📅 Change week start"),
+      h("h5",null,"📅 Change week "+sec.num+" start"),
       dIn,
-      h("label",{class:"push-lbl","for":"push-cb-"+sec.id},pushCb,"Push following weeks by same delta"),
+      h("label",{class:"push-lbl","for":cbId},pushCb,"Push all following weeks by same delta"),
       h("div",{class:"pop-btns"},
-        h("button",{class:"btn ghost small",onclick:ev2=>{ev2.stopPropagation();closePop();},"aria-label":"Cancel"},"Cancel"),
+        h("button",{class:"btn ghost small",onclick:ev2=>{ev2.stopPropagation();closePop();}},"Cancel"),
         h("button",{class:"btn primary small",onclick:ev2=>{
           ev2.stopPropagation();
-          const newVal=dIn.value;if(!newVal){closePop();return;}
+          const newVal=dIn.value;
+          if(!newVal){closePop();return;}
           const oldStart=weekStart(sec.num,sec);
           const delta=daysBetween(oldStart,newVal);
-          if(delta===0){closePop();return;}
+          closePop();
+          if(delta===0)return;
           if(pushCb.checked){
-            // Shift global start by same delta — all weeks move together
             state.settings.start=addDays(state.settings.start,delta);
-            // Clear any per-section offsets on this and later sections so they move with the global start
             allSections().forEach(s=>{if(s.num!=null&&s.num>=sec.num)s.startOffset=0;});
-          } else {
-            // Only this week: store a per-section offset (accumulates if changed multiple times)
+          }else{
             sec.startOffset=(sec.startOffset||0)+delta;
           }
-          save();render();closePop();
+          save();render();
           toast("📅 Week "+sec.num+" moved "+Math.abs(delta)+" day"+(Math.abs(delta)>1?"s":"")+(delta>0?" forward":" back")+(pushCb.checked?" — all following weeks shifted too.":"."));
-        },"aria-label":"Apply"},"Apply")));
-    document.addEventListener("click",function outside(e){if(!wrap.contains(e.target)){closePop();document.removeEventListener("click",outside);}});
-    wrap.append(pop);
+        }},"Apply")));
+    // Position anchored below the chip
+    pop.style.top=(rect.bottom+window.scrollY+6)+"px";
+    pop.style.left=Math.max(8,rect.left+window.scrollX+rect.width/2-140)+"px";
+    document.body.append(pop);
+    currentPop=pop;
+    // Defer outside-click so this same event doesn't immediately close the pop
+    setTimeout(()=>{
+      const outside=(e)=>{
+        if(!pop.contains(e.target)&&e.target!==chip){
+          closePop();
+          document.removeEventListener("click",outside,true);
+        }
+      };
+      document.addEventListener("click",outside,true);
+    },0);
   });
   wrap.append(chip);
   return wrap;
