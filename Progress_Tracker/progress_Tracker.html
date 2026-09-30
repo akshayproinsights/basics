@@ -1014,7 +1014,7 @@ function sectionView(ph,sec,idx,pIdx){
     renameBtn,
     sec.num!=null?makeDateChip(sec):null,
     h("div",{class:"mini"},bar(p.pct)),h("span",{class:"count"},p.d+"/"+p.n));
-  const toggle=()=>{sec.open=!sec.open;save();render();};
+  const toggle=(ev)=>{if(ev&&ev.target.closest(".date-pop-wrap"))return;sec.open=!sec.open;save();render();};
   head.addEventListener("click",toggle);head.addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target===head){e.preventDefault();toggle();}});
   wrap.append(head);
   if(!open)return wrap;
