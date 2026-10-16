@@ -787,6 +787,7 @@ function migrate(){
   state.phases=state.phases||[];state.milestones=state.milestones||[];state.jobs=state.jobs||[];
   state.daily=state.daily||{};state.reference=state.reference||[];state.ui=Object.assign({whyIdx:0},state.ui||{});
   for(const p of state.phases){p.sections=p.sections||[];for(const s of p.sections){s.tasks=s.tasks||[];s.review=s.review||{};
+    if(s.durationDays==null)s.durationDays=7;
     for(const t of s.tasks){t.sources=t.sources||[];t.files=t.files||[];t.recall=t.recall||[];t.notes=t.notes||"";t.date=t.date||"";}}}
 }
 async function cleanOrphans(){if(mode!=="idb")return;try{const used=new Set();allTasks().forEach(t=>t.files.forEach(f=>used.add(f.id)));
@@ -798,11 +799,14 @@ const allTasks=()=>allSections().flatMap(s=>s.tasks);
 function prog(tasks){const n=tasks.length,d=tasks.filter(t=>t.done).length;return{n,d,pct:n?Math.round(d/n*100):0};}
 function cw(){return Math.floor(daysBetween(state.settings.start,todayISO())/7)+1;}
 function weekStart(num,sec){const base=addDays(state.settings.start,(num-1)*7);return sec&&sec.startOffset?addDays(base,sec.startOffset):base;}
-function weekRange(num,sec){const s=weekStart(num,sec);return fmt(s)+" to "+fmt(addDays(s,6));}
+function weekEnd(num,sec){return addDays(weekStart(num,sec),(sec&&sec.durationDays>0?sec.durationDays:7)-1);}
+function weekRange(num,sec){return fmt(weekStart(num,sec))+" to "+fmt(weekEnd(num,sec));}
+
 function makeDateChip(sec){
   const wrap=h("div",{class:"date-pop-wrap"});
   wrap.addEventListener("click",ev=>ev.stopPropagation());
-  const chip=h("span",{class:"week-dates",title:"Click to change this week's start date"},weekRange(sec.num,sec));
+  const updateChipLabel=()=>{chip.textContent=weekRange(sec.num,sec);};
+  const chip=h("span",{class:"week-dates",title:"Click to edit start and end date"},weekRange(sec.num,sec));
   let currentPop=null;
   const closePop=()=>{
     if(currentPop){currentPop.remove();currentPop=null;}
@@ -811,39 +815,78 @@ function makeDateChip(sec){
     ev.stopPropagation();
     if(currentPop){closePop();return;}
     const rect=chip.getBoundingClientRect();
-    const currentStart=weekStart(sec.num,sec);
-    const dIn=h("input",{type:"date",value:currentStart,"aria-label":"New week start",class:"dp-date"});
-    const cbId="push-cb-"+sec.id+"-"+Date.now();
-    const pushCb=h("input",{type:"checkbox",id:cbId,checked:true});
+    const curStart=weekStart(sec.num,sec);
+    const curEnd=weekEnd(sec.num,sec);
+
+    const startIn=h("input",{type:"date",value:curStart,"aria-label":"Week start date",class:"dp-date"});
+    const endIn=h("input",{type:"date",value:curEnd,"aria-label":"Week end date",class:"dp-date"});
+
+    // Keep end >= start as user types
+    startIn.addEventListener("change",()=>{
+      if(endIn.value&&endIn.value<startIn.value)endIn.value=startIn.value;
+    });
+    endIn.addEventListener("change",()=>{
+      if(startIn.value&&endIn.value<startIn.value)startIn.value=endIn.value;
+    });
+
+    const pushId="push-cb-"+sec.id+"-"+Date.now();
+    const snapId="snap-cb-"+sec.id+"-"+Date.now();
+    const pushCb=h("input",{type:"checkbox",id:pushId});
+    const snapCb=h("input",{type:"checkbox",id:snapId,checked:true});
+
     const pop=h("div",{class:"date-pop"},
-      h("h5",null,"📅 Change week "+sec.num+" start"),
-      dIn,
-      h("label",{class:"push-lbl","for":cbId},pushCb,"Push all following weeks by same delta"),
+      h("h5",null,"📅 Edit week "+sec.num+" dates"),
+      h("div",{style:"display:grid;grid-template-columns:1fr 1fr;gap:10px"},
+        h("div",null,h("label",{style:"font-size:11px;color:var(--muted);display:block;margin-bottom:3px"},"Start date"),startIn),
+        h("div",null,h("label",{style:"font-size:11px;color:var(--muted);display:block;margin-bottom:3px"},"End date"),endIn)),
+      h("label",{class:"push-lbl","for":pushId},pushCb,"Shift all following weeks by same delta (start change)"),
+      h("label",{class:"push-lbl","for":snapId},snapCb,"Snap next week to start right after this one ends"),
       h("div",{class:"pop-btns"},
-        h("button",{class:"btn ghost small",onclick:ev2=>{ev2.stopPropagation();closePop();}},"Cancel"),
+        h("button",{class:"btn ghost small",onclick:ev2=>{ev2.stopPropagation();closePop();}} ,"Cancel"),
         h("button",{class:"btn primary small",onclick:ev2=>{
           ev2.stopPropagation();
-          const newVal=dIn.value;
-          if(!newVal){closePop();return;}
-          const oldStart=weekStart(sec.num,sec);
-          const delta=daysBetween(oldStart,newVal);
+          const newStart=startIn.value,newEnd=endIn.value;
+          if(!newStart||!newEnd){closePop();return;}
+          // Compute new duration
+          const newDur=Math.max(1,daysBetween(newStart,newEnd)+1);
+          // Compute start delta
+          const startDelta=daysBetween(curStart,newStart);
           closePop();
-          if(delta===0)return;
-          if(pushCb.checked){
-            state.settings.start=addDays(state.settings.start,delta);
-            allSections().forEach(s=>{if(s.num!=null&&s.num>=sec.num)s.startOffset=0;});
-          }else{
-            sec.startOffset=(sec.startOffset||0)+delta;
+          // Apply start shift
+          if(startDelta!==0){
+            if(pushCb.checked){
+              state.settings.start=addDays(state.settings.start,startDelta);
+              allSections().forEach(s=>{if(s.num!=null&&s.num>=sec.num)s.startOffset=0;});
+            }else{
+              sec.startOffset=(sec.startOffset||0)+startDelta;
+            }
+          }
+          // Apply new duration
+          sec.durationDays=newDur;
+          // Snap next week to start right after
+          if(snapCb.checked){
+            const orderedSecs=allSections().filter(s=>s.num!=null).sort((a,b)=>a.num-b.num);
+            const nextSec=orderedSecs.find(s=>s.num===sec.num+1);
+            if(nextSec){
+              const thisEnd=weekEnd(sec.num,sec);
+              const expectedNextStart=addDays(state.settings.start,(nextSec.num-1)*7);
+              const snapDelta=daysBetween(expectedNextStart,addDays(thisEnd,1));
+              nextSec.startOffset=(nextSec.startOffset||0)+snapDelta;
+            }
           }
           save();render();
-          toast("📅 Week "+sec.num+" moved "+Math.abs(delta)+" day"+(Math.abs(delta)>1?"s":"")+(delta>0?" forward":" back")+(pushCb.checked?" — all following weeks shifted too.":"."));
+          const msg=[];
+          if(startDelta!==0)msg.push((startDelta>0?"Start moved forward":"Start moved back")+" "+Math.abs(startDelta)+" day"+(Math.abs(startDelta)>1?"s":""));
+          if(newDur!==(curStart===newStart?daysBetween(curStart,curEnd)+1:7))msg.push("Duration: "+newDur+" day"+(newDur>1?"s":""));
+          toast("📅 Week "+sec.num+" updated"+(msg.length?" — "+msg.join(", "):"")+".");
         }},"Apply")));
     // Position anchored below the chip
+    const popWidth=320;
     pop.style.top=(rect.bottom+window.scrollY+6)+"px";
-    pop.style.left=Math.max(8,rect.left+window.scrollX+rect.width/2-140)+"px";
+    pop.style.left=Math.max(8,Math.min(rect.left+window.scrollX+rect.width/2-popWidth/2,window.innerWidth-popWidth-8))+"px";
+    pop.style.minWidth=popWidth+"px";
     document.body.append(pop);
     currentPop=pop;
-    // Defer outside-click so this same event doesn't immediately close the pop
     setTimeout(()=>{
       const outside=(e)=>{
         if(!pop.contains(e.target)&&e.target!==chip){
@@ -857,13 +900,14 @@ function makeDateChip(sec){
   wrap.append(chip);
   return wrap;
 }
+
 const findWeek=n=>allSections().find(s=>s.num===n);
 function doneByDay(){const m={};for(const t of allTasks())if(t.done&&t.date)m[t.date]=(m[t.date]||0)+1;return m;}
 function activeDay(d,dbd){const l=state.daily[d];return (dbd[d]||0)>0||(l&&((+l.min||0)>0||(+l.dsa||0)>0));}
 function streak(){const dbd=doneByDay();let d=todayISO(),n=0;if(!activeDay(d,dbd))d=addDays(d,-1);
   for(let i=0;i<500&&activeDay(d,dbd);i++){n++;d=addDays(d,-1);}return n;}
 function totals(){let min=0,dsa=0;for(const k in state.daily){min+=+state.daily[k].min||0;dsa+=+state.daily[k].dsa||0;}return{min,dsa};}
-function weekStats(num){const s=weekStart(num),e=addDays(s,6);let min=0,dsa=0,tasks=0;
+function weekStats(num){const sec=findWeek(num);const s=weekStart(num,sec),e=sec?weekEnd(num,sec):addDays(s,6);let min=0,dsa=0,tasks=0;
   for(const k in state.daily)if(k>=s&&k<=e){min+=+state.daily[k].min||0;dsa+=+state.daily[k].dsa||0;}
   for(const t of allTasks())if(t.done&&t.date>=s&&t.date<=e)tasks++;
   const apps=state.jobs.filter(j=>j.applied&&j.applied>=s&&j.applied<=e).length;return{min,dsa,tasks,apps};}
@@ -1110,16 +1154,78 @@ function reviewView(sec){
 /* ============ calendar view ============ */
 let calYear=new Date().getFullYear(),calMonth=new Date().getMonth(),calSelDay=null;
 
-// Shared recall panel builder (used in Calendar and Today)
+// Shared recall panel builder (used in Calendar)
+// Each item is clickable — opens Roadmap and expands the section containing the task
 function recallPanel(){
   const due=[];const td=todayISO();
-  for(const t of allTasks())for(const r of t.recall)if(!r.done&&r.due<=td)due.push([t,r]);
-  const rc=h("section",{class:"panel",style:"margin-top:20px"},h("h2",null,"Recall due today"),h("p",{class:"sub"},"Spaced recall keeps what you learned. Explain it out loud without notes, then tick it."));
-  if(!due.length)rc.append(h("p",{class:"empty"},"Nothing due. Tick a Learn task and its recalls appear here on day 1, 3, 7 and 21."));
-  else{const ul=h("ul",{class:"tasks"});due.sort((a,b)=>a[1].due<b[1].due?-1:1).forEach(([t,r])=>{const cb=h("input",{type:"checkbox",class:"chk","aria-label":"Recall done"});
-    cb.addEventListener("change",()=>{r.done=true;r.doneOn=td;save();render();toast("Recall logged");});
-    ul.append(h("li",{class:"task"},h("div",{class:"trow"},cb,h("div",{class:"ttext"},t.text),h("div",{class:"tmeta"},h("span",{class:"icons"},"Day "+r.n+(r.due<td?", due "+fmt(r.due):""))))));});rc.append(ul);}
+  // Build [task, recall, parentSection] triples
+  for(const sec of allSections()){
+    for(const t of sec.tasks){
+      for(const r of t.recall){
+        if(!r.done&&r.due<=td)due.push([t,r,sec]);
+      }
+    }
+  }
+  const rc=h("section",{class:"panel",style:"margin-top:20px"},
+    h("h2",null,"Recall due today"+(due.length?" · "+due.length:"")),
+    h("p",{class:"sub"},"Explain each one out loud without notes, then tick. Click the task name to jump to it in the Roadmap."));
+  if(!due.length){
+    rc.append(h("p",{class:"empty"},"Nothing due. Tick a Learn task and its recalls appear here on day 1, 3, 7 and 21."));
+  }else{
+    const ul=h("ul",{class:"tasks"});
+    due.sort((a,b)=>a[1].due<b[1].due?-1:1).forEach(([t,r,sec])=>{
+      const cb=h("input",{type:"checkbox",class:"chk","aria-label":"Recall done"});
+      cb.addEventListener("change",()=>{r.done=true;r.doneOn=td;save();render();toast("Recall logged ✓");});
+      // Clicking the task text navigates to Roadmap and opens/scrolls to that section
+      const nameEl=h("span",{class:"ttext",style:"cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px",title:"Click to open this task in Roadmap"},t.text);
+      nameEl.addEventListener("click",ev=>{
+        ev.stopPropagation();
+        // Navigate to roadmap, open the section, expand the task
+        tab="roadmap";
+        filt={q:"",cat:"",hide:false};
+        sec.open=true;
+        openTasks.add(t.id);
+        scrollTarget="sec-"+sec.id;
+        save();render();
+      });
+      const metaEl=h("div",{class:"tmeta"},
+        h("span",{class:"icons"},"Day "+r.n+(r.due<td?", due "+fmt(r.due):"")),
+        h("span",{class:"sub",style:"font-size:11px;color:var(--muted)"},sec.title?" · "+(sec.num?"W"+sec.num+": ":"")+sec.title:""));
+      ul.append(h("li",{class:"task"},h("div",{class:"trow"},cb,nameEl,metaEl)));
+    });
+    rc.append(ul);
+  }
   return rc;
+}
+
+// Builds the current-week task panel (reused in Calendar tab)
+function todayWeekPanel(){
+  const c=cw(),sec=c>=1?findWeek(c):null;
+  const wk=h("section",{class:"panel",style:"margin-top:20px"});
+  if(sec){
+    const p=prog(sec.tasks);
+    wk.append(
+      h("div",{class:"spread"},
+        h("div",null,
+          h("h2",null,"Today — Week "+sec.num+": "+sec.title),
+          h("div",{class:"sub"},weekRange(sec.num,sec)+(isMsWeek(sec.num)?". Milestone week.":"")),
+          h("p",{style:"margin:10px 0 4px"},sec.why)),
+        h("button",{class:"btn small",onclick:()=>go(sec)},"Open in roadmap")),
+      h("div",{class:"spread sub"},h("span",null,p.d+" of "+p.n+" done"),h("span",null,p.pct+"%")),
+      bar(p.pct),
+      h("ul",{class:"tasks",style:"margin-top:8px"},sec.tasks.map(t=>taskView(t,sec.tasks,sec))));
+    if(sec.dod)wk.append(h("p",{class:"sub",style:"margin-top:8px;margin-bottom:0"},"Done when: "+sec.dod));
+  }else if(c<1){
+    const zs=state.phases[0]?state.phases[0].sections:[];
+    const zt=zs.flatMap(s=>s.tasks),p=prog(zt);
+    wk.append(h("h2",null,"Before Week 1: Phase 0"),
+      h("p",{class:"sub"},"Week 1 starts "+fmtY(state.settings.start)+"."),
+      h("div",{class:"spread sub"},h("span",null,p.d+" of "+p.n+" done"),h("span",null,p.pct+"%")),bar(p.pct));
+    zs.forEach(s=>{if(!s.tasks.length)return;wk.append(h("h3",null,s.title),h("ul",{class:"tasks"},s.tasks.map(t=>taskView(t,s.tasks,s))));});
+  }else{
+    wk.append(h("h2",null,"Past planned weeks"),h("p",{class:"sub"},"Add a new week in Roadmap or update your target date in Settings."));
+  }
+  return wk;
 }
 
 function vCalendar(){
@@ -1184,8 +1290,9 @@ function vCalendar(){
   w.append(cal);
   // detail panel
   if(calSelDay){w.append(calDayDetail(calSelDay,tasksByDay));}
-  // recall panel always visible below calendar
+  // recall panel + Today panel below calendar
   w.append(recallPanel());
+  w.append(todayWeekPanel());
   return w;
 }
 function calDayDetail(iso,tasksByDay){
