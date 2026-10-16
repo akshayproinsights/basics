@@ -118,28 +118,28 @@ nav.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin:20px 0 
 .tab.on{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
 
 /* calendar */
-.cal-wrap{max-width:960px;margin:0 auto}
+.cal-wrap{width:100%}
 .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
 .cal-nav h2{font-family:var(--serif);font-size:24px;font-weight:600;margin:0}
 .cal-nav-btns{display:flex;gap:8px;align-items:center}
-.cal-grid{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.cal-grid{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;width:100%}
 .cal-dow{display:grid;grid-template-columns:repeat(7,1fr);background:var(--accent-soft);border-bottom:1px solid var(--line)}
-.cal-dow span{text-align:center;padding:10px 4px;font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.04em;text-transform:uppercase}
+.cal-dow span{text-align:center;padding:12px 4px;font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.04em;text-transform:uppercase}
 .cal-days{display:grid;grid-template-columns:repeat(7,1fr)}
-.cal-cell{min-height:96px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px;cursor:pointer;transition:background .12s;position:relative;display:flex;flex-direction:column;gap:3px}
+.cal-cell{min-height:120px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px 10px 8px;cursor:pointer;transition:background .12s;position:relative;display:flex;flex-direction:column;gap:3px}
 .cal-cell:nth-child(7n){border-right:0}
 .cal-days > .cal-cell:nth-last-child(-n+7){border-bottom:0}
 .cal-cell:hover{background:var(--hover)}
 .cal-cell.other-month .cal-num{opacity:.35}
 .cal-cell.other-month{background:color-mix(in srgb,var(--bg) 60%,var(--surface))}
 .cal-cell.today-cell{background:color-mix(in srgb,var(--accent-soft) 60%,var(--surface))}
-.cal-cell.today-cell .cal-num{background:var(--accent);color:#fff;border-radius:50%;width:24px;height:24px;display:grid;place-items:center;font-weight:700}
+.cal-cell.today-cell .cal-num{background:var(--accent);color:#fff;border-radius:50%;width:26px;height:26px;display:grid;place-items:center;font-weight:700}
 .cal-cell.has-activity .cal-num{font-weight:700}
-.cal-num{font-size:13px;font-weight:600;color:var(--ink);line-height:1;margin-bottom:2px;width:24px;height:24px;display:grid;place-items:center}
+.cal-num{font-size:14px;font-weight:600;color:var(--ink);line-height:1;margin-bottom:2px;width:26px;height:26px;display:grid;place-items:center}
 .cal-dots{display:flex;flex-wrap:wrap;gap:3px;margin-top:2px}
-.cal-dot{width:7px;height:7px;border-radius:50%;flex:none}
+.cal-dot{width:8px;height:8px;border-radius:50%;flex:none}
 .cal-time{font-size:11px;color:var(--muted);margin-top:auto;line-height:1.2}
-.cal-task-count{font-size:11px;font-weight:600;color:var(--accent)}
+.cal-task-count{font-size:12px;font-weight:600;color:var(--accent)}
 
 /* day detail panel */
 .cal-detail{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;margin-top:18px;animation:popIn .18s ease}
@@ -870,7 +870,7 @@ function weekStats(num){const s=weekStart(num),e=addDays(s,6);let min=0,dsa=0,ta
 function isMsWeek(n){return state.milestones.some(m=>+m.week===n);}
 
 /* ============ UI state ============ */
-let tab="today",openTasks=new Set(),closedTasks=new Set(),noteHeights=new Map(),filt={q:"",cat:"",hide:false},logDate=todayISO(),scrollTarget=null;
+let tab="calendar",openTasks=new Set(),closedTasks=new Set(),noteHeights=new Map(),filt={q:"",cat:"",hide:false},logDate=todayISO(),scrollTarget=null;
 
 /* ============ actions ============ */
 function toast(msg,undo){const t=$("#toast");t.innerHTML="";t.append(h("span",null,msg));
@@ -947,7 +947,7 @@ function go(sec){if(!sec)return;tab="roadmap";filt={q:"",cat:"",hide:false};
   const zero=sec.num==null;if(zero)allSections().filter(s=>s.num==null).forEach(s=>s.open=true);else sec.open=true;
   scrollTarget="sec-"+sec.id;save();render();}
 function renderTabs(){const n=$("#tabs");n.innerHTML="";
-  [["today","Today"],["calendar","📅 Calendar"],["roadmap","Roadmap"],["jobs","Applications"],["reference","Playbook"],["settings","Settings and backup"]].forEach(([k,l])=>
+  [["calendar","📅 Calendar"],["roadmap","Roadmap"],["today","Today"],["jobs","Applications"],["reference","Playbook"],["settings","Settings and backup"]].forEach(([k,l])=>
     n.append(h("button",{class:"tab"+(tab===k?" on":""),"aria-current":tab===k?"page":null,onclick:()=>{tab=k;if(k==="calendar")calSelDay=null;render();window.scrollTo({top:$("#tabs").offsetTop-10});}},l)));}
 
 /* ============ task & section views ============ */
@@ -1051,12 +1051,17 @@ function sectionView(ph,sec,idx,pIdx){
   const current=sec.num!=null?sec.num===c:(c<1&&pIdx===0);
   const wrap=h("div",{class:"week"+(open?" open":"")+(current&&sec.num!=null?" current":"")+(p.pct===100&&p.n?" complete":""),id:"sec-"+sec.id});
   const label=sec.num!=null?"Week "+sec.num:(pIdx===0?"0."+(idx+1):"Part "+(idx+1));
-  const renameBtn=h("button",{class:"btn ghost small",title:"Rename",style:"flex:none;padding:2px 6px;font-size:13px;opacity:.6",onclick:ev=>{ev.stopPropagation();const v=prompt("Rename section:",sec.title||"");if(v!==null){sec.title=v.trim()||sec.title;save();render();}}},"✎");
+  // Editable title inline — double-click to rename
+  const titleSpan=h("span",{class:"week-title",title:"Double-click to rename"},sec.title||"Untitled");
+  titleSpan.addEventListener("dblclick",ev=>{
+    ev.stopPropagation();
+    const v=prompt("Rename:",sec.title||"");
+    if(v!==null){sec.title=v.trim()||sec.title;save();render();}
+  });
   const head=h("div",{class:"week-head",role:"button",tabindex:"0","aria-expanded":String(open)},
     h("span",{class:"chev","aria-hidden":"true"},"▸"),
     h("span",{class:"badge"+(sec.num!=null&&isMsWeek(sec.num)?" ms":"")},label),
-    h("span",{class:"week-title"},sec.title||"Untitled"),
-    renameBtn,
+    titleSpan,
     sec.num!=null?makeDateChip(sec):null,
     h("div",{class:"mini"},bar(p.pct)),h("span",{class:"count"},p.d+"/"+p.n));
   const toggle=(ev)=>{if(ev&&ev.target.closest(".date-pop-wrap"))return;sec.open=!sec.open;save();render();};
@@ -1104,8 +1109,21 @@ function reviewView(sec){
  
 /* ============ calendar view ============ */
 let calYear=new Date().getFullYear(),calMonth=new Date().getMonth(),calSelDay=null;
+
+// Shared recall panel builder (used in Calendar and Today)
+function recallPanel(){
+  const due=[];const td=todayISO();
+  for(const t of allTasks())for(const r of t.recall)if(!r.done&&r.due<=td)due.push([t,r]);
+  const rc=h("section",{class:"panel",style:"margin-top:20px"},h("h2",null,"Recall due today"),h("p",{class:"sub"},"Spaced recall keeps what you learned. Explain it out loud without notes, then tick it."));
+  if(!due.length)rc.append(h("p",{class:"empty"},"Nothing due. Tick a Learn task and its recalls appear here on day 1, 3, 7 and 21."));
+  else{const ul=h("ul",{class:"tasks"});due.sort((a,b)=>a[1].due<b[1].due?-1:1).forEach(([t,r])=>{const cb=h("input",{type:"checkbox",class:"chk","aria-label":"Recall done"});
+    cb.addEventListener("change",()=>{r.done=true;r.doneOn=td;save();render();toast("Recall logged");});
+    ul.append(h("li",{class:"task"},h("div",{class:"trow"},cb,h("div",{class:"ttext"},t.text),h("div",{class:"tmeta"},h("span",{class:"icons"},"Day "+r.n+(r.due<td?", due "+fmt(r.due):""))))));});rc.append(ul);}
+  return rc;
+}
+
 function vCalendar(){
-  const w=h("div",{class:"cal-wrap"});
+  const w=h("div");
   const today=todayISO(),td=new Date();
   const yr=calYear,mo=calMonth;
   const moName=["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -1166,6 +1184,8 @@ function vCalendar(){
   w.append(cal);
   // detail panel
   if(calSelDay){w.append(calDayDetail(calSelDay,tasksByDay));}
+  // recall panel always visible below calendar
+  w.append(recallPanel());
   return w;
 }
 function calDayDetail(iso,tasksByDay){
@@ -1249,15 +1269,13 @@ function vToday(){
     zs.forEach(s=>{const pend=s.tasks;if(!pend.length)return;wk.append(h("h3",null,s.title),h("ul",{class:"tasks"},pend.map(t=>taskView(t,s.tasks,s))));});
   }else wk.append(h("h2",null,"You are past the planned weeks"),h("p",{class:"sub"},"Add a new week in the Roadmap tab, or move the target date in Settings."));
   L.append(wk);
-  // recall
-  const due=[];const td=todayISO();
-  for(const t of allTasks())for(const r of t.recall)if(!r.done&&r.due<=td)due.push([t,r]);
-  const rc=h("section",{class:"panel"},h("h2",null,"Recall due today"),h("p",{class:"sub"},"Spaced recall keeps what you learned. Explain it out loud without notes, then tick it."));
-  if(!due.length)rc.append(h("p",{class:"empty"},"Nothing due. Tick a Learn task and its recalls appear here on day 1, 3, 7 and 21."));
-  else{const ul=h("ul",{class:"tasks"});due.sort((a,b)=>a[1].due<b[1].due?-1:1).forEach(([t,r])=>{const cb=h("input",{type:"checkbox",class:"chk","aria-label":"Recall done"});
-    cb.addEventListener("change",()=>{r.done=true;r.doneOn=td;save();render();toast("Recall logged");});
-    ul.append(h("li",{class:"task"},h("div",{class:"trow"},cb,h("div",{class:"ttext"},t.text),h("div",{class:"tmeta"},h("span",{class:"icons"},"Day "+r.n+(r.due<td?", due "+fmt(r.due):""))))));});rc.append(ul);}
-  L.append(rc);
+  // recall — removed from Today; now lives in Calendar tab
+  const due=[];const td2=todayISO();
+  for(const t of allTasks())for(const r of t.recall)if(!r.done&&r.due<=td2)due.push([t,r]);
+  if(due.length){
+    const rc=h("section",{class:"panel"},h("h2",null,"Recall due today — "+due.length+" item"+(due.length>1?"s":"")),h("p",{class:"sub"},"See Calendar tab for the full list."));
+    L.append(rc);
+  }
   // log
   const lg=h("section",{class:"panel"},h("h2",null,"Log your day"),h("p",{class:"sub"},"Minutes and DSA problems feed your streak, hours and the activity map."));
   const dI=h("input",{type:"date",value:logDate,"aria-label":"Log date"});dI.addEventListener("change",()=>{logDate=dI.value||todayISO();render();});
@@ -1410,7 +1428,26 @@ function vSettings(){
     h("p",null,"Everything saves automatically in this browser, on this computer, a moment after each change. Open this same file in the same browser and you continue exactly where you left off."),
     h("p",{class:"sub"},"Clearing browsing data, private windows, or a different browser start empty. A weekly backup file protects you, including attached files."),
     h("div",{class:"row",style:"margin-top:8px"},h("button",{class:"btn primary",onclick:exportBackup},"Download backup"),h("span",{class:"btn filebtn"},"Restore from backup",imp)),
-    h("p",{class:"sub"},s.lastBackup?"Last backup: "+fmtY(s.lastBackup):"No backup downloaded yet.")));
+    h("p",{class:"sub"},s.lastBackup?"Last backup: "+fmtY(s.lastBackup):"No backup downloaded yet."),
+    h("h3",null,"☁️ Cloud sync (fix data mismatch)"),
+    h("p",{class:"sub"},"If your data is missing on this device, use \"Load from cloud\" to pull the correct data. If this device has the right data, use \"Upload to cloud\" to overwrite the cloud copy."),
+    h("div",{class:"row",style:"margin-top:8px;gap:10px"},
+      h("button",{class:"btn primary",onclick:async()=>{
+        if(!fbUser){toast("Sign in first to use cloud sync.");return;}
+        if(!confirm("Upload this device's data to the cloud? This will OVERWRITE the cloud copy."))return;
+        state.updated=new Date().toISOString();state._cloudSynced=true;
+        await fbSave(JSON.parse(JSON.stringify(state)));
+        toast("✅ Uploaded to cloud. Your other devices will now load this data.");
+      }},"⬆ Upload local → cloud"),
+      h("button",{class:"btn",onclick:async()=>{
+        if(!fbUser){toast("Sign in first to use cloud sync.");return;}
+        if(!confirm("Replace this device's data with what is stored in the cloud? Local data will be lost."))return;
+        const cloud=await fbLoad();
+        if(!cloud){toast("No cloud data found. Have you uploaded from your other device first?");return;}
+        state=cloud;state._cloudSynced=true;migrate();save();applyTheme();render();
+        toast("✅ Loaded from cloud successfully!");
+      }},"⬇ Load cloud → here"))));
+
   const stor=h("section",{class:"panel"},h("h2",null,"Storage status"));
   stor.append(h("p",{class:"sub"},mode==="idb"?"Saving to IndexedDB with a copy in localStorage. File attachments are supported.":"IndexedDB is blocked here, so saving uses localStorage only and file attachments are off. Chrome or Edge support both for local files."));
   stor.append(h("p",{class:"sub"},persisted?"The browser granted persistent storage, so it will not clear this data on its own.":"Persistent storage was not granted. Data is still saved, but download backups regularly."));
