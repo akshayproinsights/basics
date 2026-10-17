@@ -997,7 +997,7 @@ function renderTabs(){const n=$("#tabs");n.innerHTML="";
 /* ============ task & section views ============ */
 function taskView(t,arr,sec){
   const hasDetails=!!(t.notes||t.sources.length||t.files.length);
-  const open=!closedTasks.has(t.id)&&(openTasks.has(t.id)||hasDetails);
+  const open=openTasks.has(t.id)&&!closedTasks.has(t.id);
   const li=h("li",{class:"task"+(t.done?" done":"")});
   const cb=h("input",{type:"checkbox",class:"chk",checked:t.done,"aria-label":"Mark complete: "+t.text});
   cb.addEventListener("change",()=>toggleTask(t,sec,cb.checked));
@@ -1013,8 +1013,15 @@ function taskView(t,arr,sec){
 function detailView(t,arr,sec){
   const d=h("div",{class:"tdetail"});
   const date=h("input",{type:"date",value:t.date,"aria-label":"Completed on"});
-  date.addEventListener("change",()=>{t.date=date.value;if(t.date&&!t.done)t.done=true;if(!t.date){t.done=false;t.recall=[];}
-    else if(t.cat==="learn"&&!t.recall.some(r=>r.done))makeRecall(t);save();render();});
+  const applyDateChange=()=>{
+    t.date=date.value;
+    if(t.date&&!t.done)t.done=true;
+    if(!t.date){t.done=false;t.recall=[];}
+    else if(t.cat==="learn"&&!t.recall.some(r=>r.done))makeRecall(t);
+    save();render();
+  };
+  date.addEventListener("change",()=>{t.date=date.value;if(t.date&&!t.done)t.done=true;if(!t.date){t.done=false;t.recall=[];}else if(t.cat==="learn"&&!t.recall.some(r=>r.done))makeRecall(t);save();});
+  date.addEventListener("blur",applyDateChange);
   const i=arr.indexOf(t);
   d.append(h("div",{class:"drow row"},h("label",{class:"inline"},"Completed on",date),h("label",{class:"inline"},"Category",catSelect(t.cat,v=>{t.cat=v;save();render();})),
     h("span",{style:"flex:1"}),
@@ -1077,7 +1084,7 @@ function detailView(t,arr,sec){
   [flu,fln].forEach(x=>x.addEventListener("keydown",e=>{if(e.key==="Enter")addL();}));
   d.append(h("div",null,h("h4",null,"Files & Links"),fl,
     h("div",{class:"addrow"},flu,fln,h("button",{class:"btn small",onclick:addL},"Attach link"))));
-  if(t.recall.length)d.append(h("div",null,h("h4",null,"Recall schedule"),h("div",{class:"sub"},t.recall.map(r=>"Day "+r.n+" ("+fmt(r.due)+")"+(r.done?" done":"")).join(", "))));
+  if(t.recall.length)d.append(h("div",null,h("h4",null,"Recall schedule"),h("div",{class:"sub"},t.recall.map(r=>"Day "+r.n+" ("+fmt(r.due)+")"+(r.done?(" ✓ recalled "+fmtY(r.doneOn||r.due)):" — pending")).join(" · "))));
   return d;
 }
 async function openFile(f){try{const r=await fileGet(f.id);if(!r)throw new Error("The file is no longer stored in this browser.");
@@ -1157,12 +1164,13 @@ let calYear=new Date().getFullYear(),calMonth=new Date().getMonth(),calSelDay=nu
 // Shared recall panel builder (used in Calendar)
 // Each item is clickable — opens Roadmap and expands the section containing the task
 function recallPanel(){
-  const due=[];const td=todayISO();
+  const due=[],done=[];const td=todayISO();
   // Build [task, recall, parentSection] triples
   for(const sec of allSections()){
     for(const t of sec.tasks){
       for(const r of t.recall){
         if(!r.done&&r.due<=td)due.push([t,r,sec]);
+        else if(r.done)done.push([t,r,sec]);
       }
     }
   }
@@ -1175,7 +1183,7 @@ function recallPanel(){
     const ul=h("ul",{class:"tasks"});
     due.sort((a,b)=>a[1].due<b[1].due?-1:1).forEach(([t,r,sec])=>{
       const cb=h("input",{type:"checkbox",class:"chk","aria-label":"Recall done"});
-      cb.addEventListener("change",()=>{r.done=true;r.doneOn=td;save();render();toast("Recall logged ✓");});
+      cb.addEventListener("change",()=>{r.done=true;r.doneOn=todayISO();save();render();toast("Recall logged ✓");});
       // Clicking the task text navigates to Roadmap and opens/scrolls to that section
       const nameEl=h("span",{class:"ttext",style:"cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px",title:"Click to open this task in Roadmap"},t.text);
       nameEl.addEventListener("click",ev=>{
@@ -1194,6 +1202,34 @@ function recallPanel(){
       ul.append(h("li",{class:"task"},h("div",{class:"trow"},cb,nameEl,metaEl)));
     });
     rc.append(ul);
+  }
+  // ── Recall history ──────────────────────────────────────────────────────────
+  if(done.length){
+    // sort by doneOn desc (most recent first)
+    done.sort((a,b)=>(b[1].doneOn||b[1].due)<(a[1].doneOn||a[1].due)?-1:1);
+    const details=h("details",{style:"margin-top:18px;border-top:1px solid var(--line);padding-top:12px"});
+    details.append(h("summary",{style:"cursor:pointer;font-weight:600;font-size:14px;color:var(--muted)"},"Recall history ("+done.length+" completed)"));
+    const hist=h("ul",{class:"tasks",style:"margin-top:8px"});
+    done.forEach(([t,r,sec])=>{
+      const recalledDate=r.doneOn||r.due;
+      const nameEl=h("span",{class:"ttext",style:"cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;color:var(--muted);text-decoration-color:var(--line)",title:"Click to open in Roadmap"},t.text);
+      nameEl.addEventListener("click",ev=>{
+        ev.stopPropagation();
+        tab="roadmap";filt={q:"",cat:"",hide:false};sec.open=true;
+        openTasks.add(t.id);scrollTarget="sec-"+sec.id;
+        save();render();
+      });
+      const metaEl=h("div",{class:"tmeta"},
+        h("span",{class:"when",style:"color:var(--accent)"},"✓ "+fmtY(recalledDate)),
+        h("span",{class:"icons"},"Day "+r.n),
+        h("span",{class:"sub",style:"font-size:11px;color:var(--muted)"},sec.title?" · "+(sec.num?"W"+sec.num+": ":"")+sec.title:""));
+      hist.append(h("li",{class:"task done"},h("div",{class:"trow"},
+        h("span",{style:"width:20px;height:20px;border-radius:5px;background:var(--accent);display:grid;place-items:center;flex:none;margin-top:2px"},
+          h("span",{style:"color:#fff;font-size:11px;font-weight:700"},"✓")),
+        nameEl,metaEl)));
+    });
+    details.append(hist);
+    rc.append(details);
   }
   return rc;
 }
@@ -1524,11 +1560,33 @@ function vSettings(){
   const g=h("div",{class:"grid2"}),L=h("div",{class:"col"}),Rt=h("div",{class:"col"});g.append(L,Rt);
   const s=state.settings;
   const sd=h("input",{type:"date",value:s.start,"aria-label":"Week 1 start"}),tg=h("input",{type:"date",value:s.target,"aria-label":"Target date"});
-  sd.addEventListener("change",()=>{if(sd.value){s.start=sd.value;save();render();}});tg.addEventListener("change",()=>{if(tg.value){s.target=tg.value;save();render();}});
+  // Use blur (not change) so render() only fires after the user leaves the field, preventing mid-edit DOM destruction
+  sd.addEventListener("change",()=>{if(sd.value){s.start=sd.value;save();}});
+  sd.addEventListener("blur",()=>{if(sd.value){s.start=sd.value;save();render();}});
+  tg.addEventListener("change",()=>{if(tg.value){s.target=tg.value;save();}});
+  tg.addEventListener("blur",()=>{if(tg.value){s.target=tg.value;save();render();}});
   const th=h("select",{"aria-label":"Theme"});[["system","Match my device"],["light","Light"],["dark","Dark"]].forEach(([v,l])=>th.append(h("option",{value:v,selected:s.theme===v},l)));
   th.addEventListener("change",()=>{s.theme=th.value;applyTheme();save();});
+  // Reschedule: shift the Week 1 start so today aligns with the current week number based on completed tasks
+  const cWeek=Math.max(1,cw());
+  const rescheduleBtn=h("button",{class:"btn nudge",style:"margin-top:12px",title:"Shift Week 1 start so that today falls inside Week "+cWeek+". All week dates move together.",
+    onclick:()=>{
+      // We want: weekStart(cWeek) <= today <= weekEnd(cWeek)
+      // weekStart(cWeek) = settings.start + (cWeek-1)*7 days
+      // So new settings.start = today - (cWeek-1)*7
+      const newStart=addDays(todayISO(),-(cWeek-1)*7);
+      s.start=newStart;
+      // Clear any per-week offsets so all weeks snap to new grid
+      allSections().filter(sec=>sec.num!=null).forEach(sec=>{sec.startOffset=0;});
+      sd.value=newStart;
+      save();render();
+      toast("📅 Schedule shifted — Week 1 now starts "+fmtY(newStart)+". Today is Week "+cWeek+".");
+    }
+  },"⚡ I'm behind — reschedule so today = Week "+cWeek);
   L.append(h("section",{class:"panel"},h("h2",null,"Plan dates"),h("p",{class:"sub"},"Week dates and the Now marker are calculated from the Week 1 start. Moving it shifts every week."),
     h("div",{class:"row",style:"margin-top:10px"},h("label",{class:"inline"},"Week 1 starts",sd),h("label",{class:"inline"},"Target date",tg)),
+    rescheduleBtn,
+    h("p",{class:"sub",style:"margin-top:6px"},"The reschedule button keeps your ticks and notes intact — it only moves the calendar grid forward."),
     h("h3",null,"Appearance"),h("label",{class:"inline"},"Theme",th)));
   const imp=h("input",{type:"file",accept:"application/json,.json","aria-label":"Import backup"});imp.addEventListener("change",()=>{if(imp.files[0])importBackup(imp.files[0]);});
   L.append(h("section",{class:"panel"},h("h2",null,"Backup"),
