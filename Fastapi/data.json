@@ -1,0 +1,131 @@
+{
+    "1001": {
+        "full_name": "Om",
+        "email": "Om@example.com",
+        "major": "Computer Science",
+        "gpa": 10000.0
+    },
+    "1002": {
+        "full_name": "John Doe",
+        "email": "john.doe@example.com",
+        "major": "Computer Science",
+        "gpa": 9.9
+    },
+    "1003": {
+        "gpa": 9.9
+    },
+    "1004": {
+        "full_name": "Diya Patel",
+        "email": "diya.patel@example.edu.in",
+        "major": "Data Science",
+        "gpa": 4.0
+    },
+    "1005": {
+        "full_name": "Kabir Mehta",
+        "email": "kabir.mehta@example.edu.in",
+        "major": "CS",
+        "gpa": 3.6
+    },
+    "1006": {
+        "full_name": "Sanya Kulkarni",
+        "email": "sanya.kulkarni@example.edu.in",
+        "major": "IT",
+        "gpa": 3.89
+    },
+    "1007": {
+        "full_name": "Vihaan Reddy",
+        "email": "vihaan.reddy@example.edu.in",
+        "major": "AI",
+        "gpa": 3.95
+    },
+    "1008": {
+        "full_name": "Isha Chatterjee",
+        "email": "isha.chatterjee@example.edu.in",
+        "major": "Civil",
+        "gpa": 3.32
+    },
+    "1009": {
+        "full_name": "Aditya Nair",
+        "email": "aditya.nair@example.edu.in",
+        "major": "ECE",
+        "gpa": 3.71
+    },
+    "1010": {
+        "full_name": "Meera Joshi",
+        "email": "meera.joshi@example.edu.in",
+        "major": "CS",
+        "gpa": 3.68
+    },
+    "1011": {
+        "full_name": "Arjun Deshmukh",
+        "email": "arjun.deshmukh@example.edu.in",
+        "major": "Mech",
+        "gpa": 3.81
+    },
+    "1012": {
+        "full_name": "Pooja Gupta",
+        "email": "pooja.gupta@example.edu.in",
+        "major": "Data Science",
+        "gpa": 3.88
+    },
+    "1013": {
+        "full_name": "Dhruv Malhotra",
+        "email": "dhruv.malhotra@example.edu.in",
+        "major": "Finance",
+        "gpa": 3.54
+    },
+    "1014": {
+        "full_name": "Kavya Rao",
+        "email": "kavya.rao@example.edu.in",
+        "major": "IT",
+        "gpa": 3.76
+    },
+    "1015": {
+        "full_name": "Siddharth Das",
+        "email": "siddharth.das@example.edu.in",
+        "major": "Civil",
+        "gpa": 3.4
+    },
+    "1016": {
+        "full_name": "Riya Singh",
+        "email": "riya.singh@example.edu.in",
+        "major": "CS",
+        "gpa": 3.91
+    },
+    "1017": {
+        "full_name": "Pranav Pillai",
+        "email": "pranav.pillai@example.edu.in",
+        "major": "ECE",
+        "gpa": 3.29
+    },
+    "1018": {
+        "full_name": "Anusha Sen",
+        "email": "anusha.sen@example.edu.in",
+        "major": "Data Science",
+        "gpa": 3.97
+    },
+    "1019": {
+        "full_name": "Devansh Saxena",
+        "email": "devansh.saxena@example.edu.in",
+        "major": "Mech",
+        "gpa": 3.63
+    },
+    "1020": {
+        "full_name": "Tanvi Agarwal",
+        "email": "tanvi.agarwal@example.edu.in",
+        "major": "IT",
+        "gpa": 11
+    },
+    "1200": {
+        "full_name": "John Doe",
+        "email": "john.doe@akshay.com",
+        "major": "Computer Science",
+        "gpa": 10.0
+    },
+    "1000": {
+        "full_name": "AKSHAY KHANAPURE 1",
+        "email": "akshay.proinsights@gmail.com",
+        "major": "AI",
+        "gpa": 10.0
+    }
+}
